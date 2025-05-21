@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+  {% if category %}{{ category.name }}{% else %}Products{% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-md-3">
+        <h3>Categories</h3>
+        <ul class="list-group">
+          <li class="list-group-item {% if not category %}active{% endif %}">
+            <a href="{% url 'products:product_list' %}" class="text-decoration-none {% if not category %}text-white{% endif %}">All</a>
+          </li>
+          {% for c in categories %}
+            <li class="list-group-item {% if category.slug == c.slug %}active{% endif %}">
+              <a href="{{ c.get_absolute_url }}" class="text-decoration-none {% if category.slug == c.slug %}text-white{% endif %}">{{ c.name }}</a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="col-md-9">
+        <h2>{% if category %}{{ category.name }}{% else %}Products{% endif %}</h2>
+        <div class="row">
+          {% for product in products %}
+            <div class="col-md-4 mb-4">
+              <div class="card h-100">
+                <a href="{{ product.get_absolute_url }}">
+                  <img src="{{ product.image_url }}" class="card-img-top" alt="{{ product.name }}">
+                </a>
+                <div class="card-body">
+                  <h5 class="card-title">
+                    <a href="{{ product.get_absolute_url }}" class="text-decoration-none">{{ product.name }}</a>
+                  </h5>
+                  <p class="card-text">LE {{ product.price }}</p>
+                  <form action="{% url 'cart:cart_add' product.id %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="quantity" value="1">
+                    <input type="hidden" name="override" value="False">
+                    <button type="submit" class="btn btn-primary">Add to cart</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          {% empty %}
+            <div class="col-12">
+              <p>No products available.</p>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

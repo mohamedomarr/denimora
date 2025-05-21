@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Order Details{% endblock %}
+
+{% block content %}
+<div class="order-detail-container">
+    <h2>Order #{{ order.id }}</h2>
+    
+    <div class="order-info">
+        <div class="order-status">
+            <p><strong>Status:</strong> <span class="status-badge {{ order.status }}">{{ order.get_status_display }}</span></p>
+            <p><strong>Date:</strong> {{ order.created|date:"F j, Y" }}</p>
+        </div>
+        
+        <div class="shipping-info">
+            <h3>Shipping Information</h3>
+            <p><strong>Name:</strong> {{ order.first_name }} {{ order.last_name }}</p>
+            <p><strong>Email:</strong> {{ order.email }}</p>
+            <p><strong>Address:</strong> {{ order.address }}, {{ order.city }}, {{ order.postal_code }}</p>
+            <p><strong>Phone:</strong> {{ order.phone }}</p>
+        </div>
+    </div>
+    
+    <div class="order-items">
+        <h3>Order Items</h3>
+        <div class="items-table">
+            <div class="item-header">
+                <div class="item-product">Product</div>
+                <div class="item-price">Price</div>
+                <div class="item-quantity">Quantity</div>
+                <div class="item-total">Total</div>
+            </div>
+            
+            {% for item in order.items.all %}
+                <div class="item-row">
+                    <div class="item-product">
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                        <div class="product-info">
+                            <h4>{{ item.product.name }}</h4>
+                        </div>
+                    </div>
+                    <div class="item-price">LE {{ item.price }}</div>
+                    <div class="item-quantity">{{ item.quantity }}</div>
+                    <div class="item-total">LE {{ item.get_cost }}</div>
+                </div>
+            {% endfor %}
+            
+            <div class="order-summary">
+                <div class="order-total">
+                    <h4>Total: <span>LE {{ order.get_total_cost }}</span></h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="order-actions">
+        <a href="{% url 'orders:order_history' %}" class="back-btn">Back to Orders</a>
+        <a href="{% url 'products:product_list' %}" class="continue-shopping">Continue Shopping</a>
+    </div>
+</div>
+{% endblock %}

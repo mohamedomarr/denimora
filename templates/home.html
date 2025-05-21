@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}DENIMORA{% endblock %}
+
+{% block content %}
+<!--Hero Section Stars-->
+<div class="hero-section" id="Home">
+    <!--Home Section Starts-->
+    <section class="home" id="home">
+        <div class="home-content">
+            <div class="home-text">
+                <p>Casual & Everyday</p>
+                <h1>Timeless Turkish <br> Denim</h1>
+                <p>Effortlessly blend turkish style with our Casual & Everyday collection</p>
+            </div>
+            <div class="home-btn">
+                <button>
+                    <a href="{% url 'products:product_list' %}">Shop Now</a>
+                </button>
+            </div>
+        </div>
+    </section>
+    <!--Home Section Ends-->
+</div>
+<!--Hero Section Ends-->
+
+<!-- About Us Section -->
+<section class="about-us" id="About-Us">
+    <div class="about-container">
+        <div class="about-image">
+            <img src="{% static 'Assets/Shop/ConatctBgCover1.jpg' %}" alt="About DENIMORA">
+        </div>
+        <div class="about-content">
+            <h2>About Us</h2>
+            <p>
+                At <span>DENIMORA</span>, we believe that denim is more than just fabric — it's a lifestyle.
+                Our mission is to craft high-quality, stylish, and timeless pieces that empower individuality and confidence.
+                By bringing Turkish quality to our egyption market.
+            </p>
+            <a href="{% url 'products:product_list' %}" class="btn">Shop Now</a>
+        </div>
+    </div>
+</section>
+
+<!--Shop Section Starts-->
+<section class="shop-section">
+    <div class="section-title">
+        <h2>Our Best</h2>
+    </div>
+
+    <div class="products-container">
+        {% for product in featured_products %}
+        <div class="product-card" data-item='{"id":{{ product.id }},"slug":"{{ product.slug }}","name":"{{ product.name }}","price":{{ product.price }},"image":"{{ product.image_url }}"}'>
+            <div class="product-img-wrapper">
+                <img src="{{ product.image_url }}" alt="{{ product.name }}">
+                <a href="{% url 'cart:cart_add' product.id %}" class="cart-icon">
+                    <i class="fas fa-bag-shopping"></i>
+                </a>
+            </div>
+            <div class="cart-text">
+                <h3>{{ product.name }}</h3>
+                <p>LE {{ product.price }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+<!--Shop Section Ends-->
+
+<!--Contact Us Sectoin Starts-->
+<section class="Contact-Us" id="Contact-Us">
+    <div class="section-title">
+        <h2>Get In Touch</h2>
+    </div>
+
+    <div class="Contact-Content">
+        <div class="text-bg">
+            <div class="Text">
+                <p>We value the connection with our community
+                    and are here to assist in any way we can.
+                    Feel free to reach out through the following channels:
+                </p>
+            </div>
+        </div>
+
+        <div class="contact-form">
+            <form action="" method="post">
+                {% csrf_token %}
+                <div class="inputbox">
+                    <span class="fas fa-user"></span>
+                    <input type="text" name="name" placeholder="name" required>
+                </div>
+                <div class="inputbox">
+                    <span class="fas fa-envelope"></span>
+                    <input type="email" name="email" placeholder="email" required>
+                </div>
+                <div class="inputbox">
+                    <textarea name="message" placeholder="Leave Your Message" required></textarea>
+                </div>
+                <input type="submit" value="Send" class="btn">
+            </form>
+        </div>
+    </div>
+</section>
+<!--Contact Us Sectoin Ends-->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get all product cards
+        const productCards = document.querySelectorAll('.product-card');
+        
+        // Add click event listener to each card
+        productCards.forEach(card => {
+            card.addEventListener('click', function(e) {
+                // Don't trigger if clicking the cart icon
+                if (e.target.closest('.cart-icon')) {
+                    return;
+                }
+                
+                // Get the item data from the data-item attribute
+                const itemData = JSON.parse(this.getAttribute('data-item'));
+                
+                // Redirect to product detail page
+                window.location.href = `/products/${itemData.id}/${itemData.slug}/`;
+            });
+        });
+    });
+</script>
+{% endblock %}

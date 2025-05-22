@@ -111,7 +111,7 @@
                 {% if cart|length > 0 %}
                     {% for item in cart %}
                     <div class="cart-item">
-                        <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}">
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
                         <div class="cart-item-details">
                             <h3>{{ item.product.name }}</h3>
                             <p>LE {{ item.price }} x {{ item.quantity }}</p>

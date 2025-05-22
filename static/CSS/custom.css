@@ -1,0 +1,10 @@
+/* Default product image for products without images */
+.default-product-image {
+    width: 100%;
+    height: auto;
+    background-color: #f8f9fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}

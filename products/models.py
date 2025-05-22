@@ -57,9 +57,6 @@ class Product(models.Model):
         
     @property
     def image_url(self):
-        try:
-            if self.image and hasattr(self.image, 'url'):
-                return self.image.url
-        except ValueError:
-            pass
+        if self.image and hasattr(self.image, 'url'):
+            return self.image.url
         return '/static/Assets/Shop/default-product.jpg'

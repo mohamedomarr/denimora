@@ -1,0 +1,26 @@
+<div className="popup-tabs">
+              <button 
+                className={`tab-btn ${activeTab === 'login' ? 'active' : ''}`}
+                onClick={() => showTab('login')}
+              >
+                Login
+              </button>
+              <button 
+                className={`tab-btn ${activeTab === 'signup' ? 'active' : ''}`}
+                onClick={() => showTab('signup')}
+              >
+                Sign Up
+              </button>
+            </div>
+
+
+
+
+             <div className="tab-content" id="login" style={{ display: activeTab === 'login' ? 'block' : 'none' }}>
+              <h2>Login</h2>
+              <form onSubmit={(e) => e.preventDefault()}>
+                <input type="email" placeholder="Email" required />
+                <input type="password" placeholder="Password" required />
+                <button type="submit" className="btn">Login</button>
+              </form>
+            </div>

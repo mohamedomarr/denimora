@@ -1,54 +1,166 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCartMenu } from '../contexts/CartMenuContext';
 import { useMobileMenu } from '../contexts/MobileMenuContext';
 import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../contexts/AuthContext';
+import apiService from '../services/api';
 import '../CSS/bootstrap.css';
 import '../CSS/Styles.css';
 
+// Fallback product data in case API fails
+const FALLBACK_PRODUCTS = [
+  { 
+    id: 1, 
+    name: "Classic Blue Jeans", 
+    slug: "classic-blue-jeans", 
+    price: 350, 
+    image_url: "/Assets/Shop/Shop 1.jpg", 
+    category: { id: 1, name: "Jeans", slug: "jeans" } 
+  },
+  { 
+    id: 2, 
+    name: "Baggi Fit", 
+    slug: "baggi-fit", 
+    price: 300, 
+    image_url: "/Assets/Shop/Shop 2.jpg", 
+    category: { id: 1, name: "Jeans", slug: "jeans" } 
+  },
+  { 
+    id: 3, 
+    name: "Wide Leg", 
+    slug: "wide-leg", 
+    price: 450, 
+    image_url: "/Assets/Shop/Shop 3.jpg", 
+    category: { id: 1, name: "Jeans", slug: "jeans" } 
+  },
+  { 
+    id: 4, 
+    name: "Straight Leg", 
+    slug: "straight-leg", 
+    price: 250, 
+    image_url: "/Assets/Shop/Shop 6.jpg", 
+    category: { id: 2, name: "Pants", slug: "pants" } 
+  },
+  { 
+    id: 5, 
+    name: "Baggi Fit Light", 
+    slug: "baggi-fit-light", 
+    price: 250, 
+    image_url: "/Assets/Shop/Shop 4.jpg", 
+    category: { id: 1, name: "Jeans", slug: "jeans" } 
+  },
+  { 
+    id: 6, 
+    name: "Baggi Fit Dark", 
+    slug: "baggi-fit-dark", 
+    price: 250, 
+    image_url: "/Assets/Shop/Shop 5.jpg", 
+    category: { id: 1, name: "Jeans", slug: "jeans" } 
+  }
+];
+
+// Fallback categories
+const FALLBACK_CATEGORIES = [
+  { id: 1, name: "Jeans", slug: "jeans" },
+  { id: 2, name: "Pants", slug: "pants" }
+];
 
 const Shop = () => {
   const { isCartOpen, cartRef, cartBtnRef, openCartMenu, closeCartMenu } = useCartMenu();
   const { isMenuOpen, menuRef, menuBtnRef, openMobileMenu, closeMobileMenu } = useMobileMenu();
-  const [showCheckout, setShowCheckout] = useState(false);
   const { cartItems, addToCart, removeFromCart, updateQuantity, getTotalPrice } = useCart();
+  const { isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
 
-  const products = [
-    { name: "Baggi Fit", price: 350, image: "/Assets/Shop/Shop 1.jpg" },
-    { name: "Wide Leg", price: 300, image: "/Assets/Shop/Shop 2.jpg" },
-    { name: "Straight Leg", price: 450, image: "/Assets/Shop/Shop 3.jpg" },
-    { name: "Baggi Fit Light", price: 250, image: "/Assets/Shop/Shop 6.jpg" },
-    { name: "Baggi Fit Light", price: 250, image: "/Assets/Shop/Shop 4.jpg" },
-    { name: "Baggi Fit Light", price: 250, image: "/Assets/Shop/Shop 5.jpg" },
-    { name: "Baggi Fit Light", price: 250, image: "/Assets/Shop/Shop 7.jpg" },
-    { name: "Baggi Fit Light", price: 250, image: "/Assets/Shop/Shop 8.jpg" },
-    { name: "Baggi Fit Light", price: 250, image: "/Assets/Shop/Shop 9.jpg" },
-    { name: "Baggi Fit Light", price: 250, image: "/Assets/Shop/Shop 10.jpg" },
-    { name: "Baggi Fit Light", price: 250, image: "/Assets/Shop/Shop 11.jpg" },
-    { name: "Baggi Fit Light", price: 250, image: "/Assets/Shop/Shop 12.jpg" }
-  ];
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [isUsingFallbackData, setIsUsingFallbackData] = useState(false);
+
+  // Fetch products and categories
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch categories
+        let categoriesData = [];
+        try {
+          const categoriesResponse = await apiService.getCategories();
+          if (categoriesResponse.data) {
+            categoriesData = categoriesResponse.data;
+            setCategories(categoriesData);
+          }
+        } catch (err) {
+          console.error('Error fetching categories:', err);
+          // Use fallback categories
+          categoriesData = FALLBACK_CATEGORIES;
+          setCategories(FALLBACK_CATEGORIES);
+          setIsUsingFallbackData(true);
+        }
+
+        // Fetch products (filtered by category if selected)
+        try {
+          const productsResponse = await apiService.getProducts(selectedCategory);
+          if (productsResponse.data) {
+            setProducts(productsResponse.data);
+          }
+        } catch (err) {
+          console.error('Error fetching products:', err);
+          // Use fallback products, filtered by category if needed
+          let filteredProducts = FALLBACK_PRODUCTS;
+          if (selectedCategory) {
+            filteredProducts = FALLBACK_PRODUCTS.filter(
+              product => product.category.slug === selectedCategory
+            );
+          }
+          setProducts(filteredProducts);
+          setIsUsingFallbackData(true);
+        }
+      } catch (err) {
+        console.error('Error in data fetching:', err);
+        setError('Failed to load products. Using local data instead.');
+        // Use all fallback data
+        setCategories(FALLBACK_CATEGORIES);
+        setProducts(FALLBACK_PRODUCTS);
+        setIsUsingFallbackData(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [selectedCategory]);
 
   const handleProductClick = (product) => {
-    const params = new URLSearchParams({
-      name: product.name,
-      price: product.price,
-      image: product.image
-    });
-    window.location.href = `/shop-item?${params.toString()}`;
+    navigate(`/shop-item?id=${product.id}&slug=${product.slug}`);
   };
 
   const handleCartClick = (e, product) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product);
+    addToCart({
+      product_id: product.id,
+      name: product.name,
+      price: product.price,
+      image_url: product.image_url,
+      quantity: 1
+    });
   };
 
-  const handleCheckoutClick = () => {
+  const handleCategoryClick = (slug) => {
+    setSelectedCategory(slug);
+  };
 
+  if (isLoading) {
+    return <div className="loading">Loading products...</div>;
   }
 
   return (
     <>
+      {error && <div className="error-banner">{error}</div>}
+      
       {/* Header */}
       <header className="header" id="Shop-Header">
         <div className="shop-page-navbar">
@@ -67,6 +179,14 @@ const Shop = () => {
         <div className="shop-page-icons">
           <div className="fas fa-shopping-bag" id="cart-btn" ref={cartBtnRef} onClick={openCartMenu}></div>
           <div className="fas fa-bars" id="menu-btn" ref={menuBtnRef} onClick={openMobileMenu}></div>
+          {isAuthenticated ? (
+            <div className="user-icon">
+              <i className="fas fa-user"></i>
+              <span>{user.username}</span>
+            </div>
+          ) : (
+            <Link to="/login" className="login-link">Login</Link>
+          )}
         </div>
       </header>
       
@@ -74,38 +194,68 @@ const Shop = () => {
       <section className="shop-section">
         <div className="Shop-section-title">
           <h2>Our Collection</h2>
+          {isUsingFallbackData && (
+            <p className="fallback-notice">
+              Note: Using local product data. Connect to backend for live products.
+            </p>
+          )}
         </div>
 
-        <div className="products-container">
-          {products.map((product, index) => (
-            <div 
-              key={index} 
-              className="product-card" 
-              onClick={() => handleProductClick(product)}
+        {/* Categories filter */}
+        {categories.length > 0 && (
+          <div className="categories-filter">
+            <button 
+              className={`category-btn ${selectedCategory === null ? 'active' : ''}`}
+              onClick={() => setSelectedCategory(null)}
             >
-              <div className="product-img-wrapper">
-                <img 
-                  src={product.image} 
-                  alt={product.name}
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = '/Assets/Shop/placeholder.jpg';
-                  }}
-                />
-                <a 
-                  href="" 
-                  className="cart-icon"
-                  onClick={(e) => handleCartClick(e, product)}
-                >
-                  <i className="fas fa-bag-shopping"></i>
-                </a>
+              All
+            </button>
+            {categories.map(category => (
+              <button 
+                key={category.id}
+                className={`category-btn ${selectedCategory === category.slug ? 'active' : ''}`}
+                onClick={() => handleCategoryClick(category.slug)}
+              >
+                {category.name}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="products-container">
+          {products.length === 0 ? (
+            <p className="no-products">No products found</p>
+          ) : (
+            products.map((product) => (
+              <div 
+                key={product.id} 
+                className="product-card" 
+                onClick={() => handleProductClick(product)}
+              >
+                <div className="product-img-wrapper">
+                  <img 
+                    src={product.image_url} 
+                    alt={product.name}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = '/Assets/Shop/placeholder.jpg';
+                    }}
+                  />
+                  <a 
+                    href="#" 
+                    className="cart-icon"
+                    onClick={(e) => handleCartClick(e, product)}
+                  >
+                    <i className="fas fa-bag-shopping"></i>
+                  </a>
+                </div>
+                <div className="cart-text">
+                  <h3>{product.name}</h3>
+                  <p>LE {Number(product.price).toFixed(2)}</p>
+                </div>
               </div>
-              <div className="cart-text">
-                <h3>{product.name}</h3>
-                <p>LE {product.price.toFixed(2)}</p>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </section>
 
@@ -144,27 +294,35 @@ const Shop = () => {
             {cartItems.length === 0 ? (
               <p className="empty-cart">Your cart is empty</p>
             ) : (
-              cartItems.map((item, index) => (
-                <div key={`${item.name}-${item.size}-${index}`} className="cart-item">
+              cartItems.map((item) => (
+                <div key={`${item.product_id || item.name}-${item.size}-${Math.random()}`} className="cart-item">
                   <div className="cart-item-image">
-                    <img src={item.image} alt={item.name} />
+                    <img src={item.image_url || item.image} alt={item.name} />
                   </div>
                   <div className="cart-item-details">
                     <h3>{item.name}</h3>
-                    <p>Size: {item.size}</p>
-                    <p>Price: LE {item.price.toFixed(2)}</p>
-                    <p>Total: LE {(item.price * item.quantity).toFixed(2)}</p>
+                    {item.size && <p>Size: {item.size}</p>}
+                    <p>Price: LE {Number(item.price).toFixed(2)}</p>
+                    <p>Total: LE {Number(item.total_price || (item.price * item.quantity)).toFixed(2)}</p>
                     <div className="cart-item-quantity">
-                      <button onClick={() => updateQuantity(item.name, item.size, item.quantity - 1)}>-</button>
+                      <button onClick={() => item.product_id 
+                        ? updateQuantity(item.product_id, item.quantity - 1)
+                        : updateQuantity(item.name, item.size, item.quantity - 1)
+                      }>-</button>
                       <span>{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.name, item.size, item.quantity + 1)}>+</button>
+                      <button onClick={() => item.product_id 
+                        ? updateQuantity(item.product_id, item.quantity + 1)
+                        : updateQuantity(item.name, item.size, item.quantity + 1)
+                      }>+</button>
                     </div>
                   </div>
                   <button 
                     className="remove-item" 
                     onClick={(e) => {
                       e.stopPropagation();
-                      removeFromCart(item.name, item.size);
+                      item.product_id 
+                        ? removeFromCart(item.product_id)
+                        : removeFromCart(item.name, item.size);
                     }}
                   >
                     <i className="fas fa-trash"></i>

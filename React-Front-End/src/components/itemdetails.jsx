@@ -4,6 +4,7 @@ import { useSizeChart } from '../hooks/useSizeChart';
 import { useCartMenu } from '../hooks/useCartMenu';
 import { useMobileMenu } from '../hooks/useMobileMenu';
 import { useCart } from '../contexts/CartContext';
+import apiService from '../services/api';
 import '../CSS/bootstrap.css';
 import '../CSS/Styles.css';
 
@@ -21,26 +22,75 @@ const ItemDetails = () => {
   const [isAccordionOpen, setIsAccordionOpen] = useState(false);
   const [itemData, setItemData] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  const productId = searchParams.get('id');
+  const productSlug = searchParams.get('slug');
+  // Keep these for backward compatibility
   const productName = searchParams.get('name');
   const productPrice = searchParams.get('price');
   const productImage = searchParams.get('image');
   
 
   useEffect(() => {
-    if (!productName || !productPrice || !productImage) {
-      navigate('/shop');
-      return;
-    }
-
-    const data = {
-      name: productName,
-      price: parseFloat(productPrice),
-      image: productImage
+    const fetchProductData = async () => {
+      setIsLoading(true);
+      try {
+        // If we have id and slug, use the API
+        if (productId && productSlug) {
+          const response = await apiService.getProductDetail(productId, productSlug);
+          if (response.data) {
+            const product = response.data;
+            setItemData({
+              id: product.id,
+              name: product.name,
+              price: parseFloat(product.price),
+              image: product.image_url || product.image,
+              description: product.description,
+              slug: product.slug
+            });
+            setBasePrice(parseFloat(product.price));
+            document.title = `DENIMORA - ${product.name}`;
+          }
+        } 
+        // Fallback to URL parameters if API fetch not possible
+        else if (productName && productPrice && productImage) {
+          const data = {
+            name: productName,
+            price: parseFloat(productPrice),
+            image: productImage
+          };
+          setItemData(data);
+          setBasePrice(data.price);
+          document.title = `DENIMORA - ${data.name}`;
+        } else {
+          // Neither API parameters nor URL parameters available
+          navigate('/shop');
+          return;
+        }
+      } catch (err) {
+        console.error('Error fetching product details:', err);
+        setError('Failed to load product details. Please try again later.');
+        
+        // If API call fails but we have URL parameters, use those as fallback
+        if (productName && productPrice && productImage) {
+          const data = {
+            name: productName,
+            price: parseFloat(productPrice),
+            image: productImage
+          };
+          setItemData(data);
+          setBasePrice(data.price);
+          document.title = `DENIMORA - ${data.name}`;
+        }
+      } finally {
+        setIsLoading(false);
+      }
     };
-    setItemData(data);
-    setBasePrice(data.price);
-    document.title = `DENIMORA - ${data.name}`;
-  }, [productName, productPrice, productImage, navigate]);
+
+    fetchProductData();
+  }, [productId, productSlug, productName, productPrice, productImage, navigate]);
 
   const decreaseQuantity = () => {
     if (quantity > 1) {
@@ -69,13 +119,15 @@ const ItemDetails = () => {
       return;
     }
 
+    // Create cart item with appropriate structure
     const item = {
-      name: productName,
-      price: parseFloat(productPrice),
-      image: productImage,
+      product_id: itemData.id || 0, // API format
+      name: itemData.name,
+      price: itemData.price,
+      image_url: itemData.image,
       size: selectedSize,
       quantity: quantity,
-      totalPrice: parseFloat(productPrice) * quantity
+      totalPrice: itemData.price * quantity
     };
 
     addToCart(item);
@@ -84,6 +136,8 @@ const ItemDetails = () => {
 
   const totalPrice = basePrice * quantity;
 
+  if (isLoading) return <div className="loading">Loading product details...</div>;
+  if (error && !itemData) return <div className="error">{error}</div>;
   if (!itemData) return null;
 
   return (
@@ -113,8 +167,8 @@ const ItemDetails = () => {
       <section className="shop-item-container">
         <div className="shop-item-img">
           <img 
-            src={productImage} 
-            alt={productName} 
+            src={itemData.image} 
+            alt={itemData.name} 
             id="productImage"
             onError={(e) => {
               e.target.onerror = null;
@@ -125,14 +179,14 @@ const ItemDetails = () => {
 
         <div className="shop-item-content">
           <div className="content-text">
-            <h3 id="productName">{productName}</h3>
+            <h3 id="productName">{itemData.name}</h3>
             <h3>LE {basePrice.toFixed(2)}</h3>
             <p>
-              Denimora
+              {itemData.description || `Denimora
               100% cotton of softness and does not contain polyester and elastin
               2 High quality due to the methods of fabric and treatment
               3 High density fabric (From 12 To 14) ounces for each one
-              Which means a distinctive appearance
+              Which means a distinctive appearance`}
             </p>
 
             <div className="size-selection">
@@ -213,7 +267,7 @@ const ItemDetails = () => {
             >
               <div className="accordion-body">
                 <p>
-                  Denimora
+                  {itemData.description || `Denimora
                   100% cotton of softness and does not contain polyester and elastin
                   High quality due to the methods of fabric and treatment
                   High density fabric (From 12 To 14) ounces for each one
@@ -221,7 +275,7 @@ const ItemDetails = () => {
                   Average weight
                   Made of Denim Saladge's fabric, which is one of the highest raw materials
                   investment value because it lives for long years
-                  The best option for the professionals who appreciate the quality,The bladder, design and luxurious details
+                  The best option for the professionals who appreciate the quality,The bladder, design and luxurious details`}
                 </p>
               </div>
             </div>
@@ -299,26 +353,34 @@ const ItemDetails = () => {
               <p className="empty-cart">Your cart is empty</p>
             ) : (
               cartItems.map((item, index) => (
-                <div key={`${item.name}-${item.size}-${index}`} className="cart-item">
+                <div key={`${item.product_id || item.name}-${item.size}-${index}`} className="cart-item">
                   <div className="cart-item-image">
-                    <img src={item.image} alt={item.name} />
+                    <img src={item.image_url || item.image} alt={item.name} />
                   </div>
                   <div className="cart-item-details">
                     <h3>{item.name}</h3>
                     <p>Size: {item.size}</p>
-                    <p>Price: LE {item.price.toFixed(2)}</p>
-                    <p>Total: LE {(item.price * item.quantity).toFixed(2)}</p>
+                    <p>Price: LE {Number(item.price).toFixed(2)}</p>
+                    <p>Total: LE {Number(item.total_price || (item.price * item.quantity)).toFixed(2)}</p>
                     <div className="cart-item-quantity">
-                      <button onClick={() => updateQuantity(item.name, item.size, item.quantity - 1)}>-</button>
+                      <button onClick={() => item.product_id 
+                        ? updateQuantity(item.product_id, item.quantity - 1)
+                        : updateQuantity(item.name, item.size, item.quantity - 1)
+                      }>-</button>
                       <span>{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.name, item.size, item.quantity + 1)}>+</button>
+                      <button onClick={() => item.product_id 
+                        ? updateQuantity(item.product_id, item.quantity + 1)
+                        : updateQuantity(item.name, item.size, item.quantity + 1)
+                      }>+</button>
                     </div>
                   </div>
                   <button 
                     className="remove-item" 
                     onClick={(e) => {
                       e.stopPropagation();
-                      removeFromCart(item.name, item.size);
+                      item.product_id 
+                        ? removeFromCart(item.product_id)
+                        : removeFromCart(item.name, item.size);
                     }}
                   >
                     <i className="fas fa-trash"></i>

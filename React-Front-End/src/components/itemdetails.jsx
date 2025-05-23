@@ -24,14 +24,15 @@ const ItemDetails = () => {
   const [selectedSize, setSelectedSize] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+  const [availableSizes, setAvailableSizes] = useState([]);
+
   const productId = searchParams.get('id');
   const productSlug = searchParams.get('slug');
   // Keep these for backward compatibility
   const productName = searchParams.get('name');
   const productPrice = searchParams.get('price');
   const productImage = searchParams.get('image');
-  
+
 
   useEffect(() => {
     const fetchProductData = async () => {
@@ -48,12 +49,18 @@ const ItemDetails = () => {
               price: parseFloat(product.price),
               image: product.image_url || product.image,
               description: product.description,
-              slug: product.slug
+              slug: product.slug,
+              available_sizes: product.available_sizes || []
             });
             setBasePrice(parseFloat(product.price));
             document.title = `DENIMORA - ${product.name}`;
+
+            // Store available sizes
+            if (product.available_sizes && product.available_sizes.length > 0) {
+              setAvailableSizes(product.available_sizes);
+            }
           }
-        } 
+        }
         // Fallback to URL parameters if API fetch not possible
         else if (productName && productPrice && productImage) {
           const data = {
@@ -72,7 +79,7 @@ const ItemDetails = () => {
       } catch (err) {
         console.error('Error fetching product details:', err);
         setError('Failed to load product details. Please try again later.');
-        
+
         // If API call fails but we have URL parameters, use those as fallback
         if (productName && productPrice && productImage) {
           const data = {
@@ -113,25 +120,66 @@ const ItemDetails = () => {
     setSelectedSize(size);
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
+    console.log("Add to Cart button clicked");
+
     if (!selectedSize) {
       alert('Please select a size');
       return;
     }
 
+    // Find size_id from available sizes if using API
+    let sizeId = null;
+    if (itemData.id && availableSizes.length > 0) {
+      // Try to find the size object
+      const sizeObject = availableSizes.find(s => {
+        // Handle different possible structures of size data
+        if (s.size && s.size.name === selectedSize) {
+          return true;
+        } else if (s.name === selectedSize) {
+          return true;
+        }
+        return false;
+      });
+
+      if (sizeObject) {
+        // Extract the ID based on the structure
+        sizeId = sizeObject.size ? sizeObject.size.id : sizeObject.id;
+      }
+    }
+
     // Create cart item with appropriate structure
     const item = {
-      product_id: itemData.id || 0, // API format
+      product_id: itemData.id || null, // API format
       name: itemData.name,
       price: itemData.price,
+      image: itemData.image, // Include both image formats for compatibility
       image_url: itemData.image,
       size: selectedSize,
+      size_id: sizeId,
       quantity: quantity,
       totalPrice: itemData.price * quantity
     };
 
+    console.log("Adding item to cart:", item);
+
+    // Use a non-async approach to avoid Promise handling issues
     addToCart(item);
+    console.log("Cart updated, opening cart menu");
     openCartMenu();
+
+    // Show visual feedback that item was added
+    const addToCartButton = document.querySelector('.add-to-cart button');
+    if (addToCartButton) {
+      const originalText = addToCartButton.textContent;
+      addToCartButton.textContent = "Added!";
+      addToCartButton.style.backgroundColor = "#4CAF50";
+
+      setTimeout(() => {
+        addToCartButton.textContent = originalText;
+        addToCartButton.style.backgroundColor = "";
+      }, 1500);
+    }
   };
 
   const totalPrice = basePrice * quantity;
@@ -166,9 +214,9 @@ const ItemDetails = () => {
       {/* Shop Item Section */}
       <section className="shop-item-container">
         <div className="shop-item-img">
-          <img 
-            src={itemData.image} 
-            alt={itemData.name} 
+          <img
+            src={itemData.image}
+            alt={itemData.name}
             id="productImage"
             onError={(e) => {
               e.target.onerror = null;
@@ -191,15 +239,29 @@ const ItemDetails = () => {
 
             <div className="size-selection">
               <div className="size-btns">
-                {['34', '36', '38', '40', '42'].map((size) => (
-                  <button 
-                    key={size}
-                    className={selectedSize === size ? 'active' : ''}
-                    onClick={() => handleSizeSelect(size)}
-                  >
-                    {size}
-                  </button>
-                ))}
+                {availableSizes.length > 0 ? (
+                  // If we have API data with available sizes
+                  availableSizes.map((sizeObj) => (
+                    <button
+                      key={sizeObj.size.id}
+                      className={selectedSize === sizeObj.size.name ? 'active' : ''}
+                      onClick={() => handleSizeSelect(sizeObj.size.name)}
+                    >
+                      {sizeObj.size.name}
+                    </button>
+                  ))
+                ) : (
+                  // Fallback to hardcoded sizes
+                  ['34', '36', '38', '40', '42'].map((size) => (
+                    <button
+                      key={size}
+                      className={selectedSize === size ? 'active' : ''}
+                      onClick={() => handleSizeSelect(size)}
+                    >
+                      {size}
+                    </button>
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -216,9 +278,9 @@ const ItemDetails = () => {
               <h6>Quantity : </h6>
               <div className="quantity-selection">
                 <button onClick={decreaseQuantity}>-</button>
-                <input 
-                  type="number" 
-                  id="quantity" 
+                <input
+                  type="number"
+                  id="quantity"
                   value={quantity}
                   onChange={handleQuantityChange}
                   min="1"
@@ -238,7 +300,7 @@ const ItemDetails = () => {
                   <h2>Our Size Chart</h2>
                 </div>
                 <div className="size-chart-img-lgs">
-                  <img src="/Assets/Shop/Navy Size Chart.png" alt="Size Chart" />
+                  <img src="/Assets/Shop/Navy-Size-Chart.png" alt="Size Chart" />
                 </div>
               </div>
             </div>
@@ -249,9 +311,9 @@ const ItemDetails = () => {
         <div className="accordion description-accordion">
           <div className="accordion-item">
             <h2 className="accordion-header" id="headingOne">
-              <button 
+              <button
                 className={`accordion-button ${isAccordionOpen ? '' : 'collapsed'}`}
-                type="button" 
+                type="button"
                 onClick={() => setIsAccordionOpen(!isAccordionOpen)}
                 aria-expanded={isAccordionOpen}
                 aria-controls="collapseOne"
@@ -260,8 +322,8 @@ const ItemDetails = () => {
                 Description
               </button>
             </h2>
-            <div 
-              id="collapseOne" 
+            <div
+              id="collapseOne"
               className={`accordion-collapse collapse ${isAccordionOpen ? 'show' : ''}`}
               aria-labelledby="headingOne"
             >
@@ -287,7 +349,7 @@ const ItemDetails = () => {
       <section className="footer">
         <div className="footer-container">
           <div className="footer-logo">
-            <img src="/Assets/Logos&Icons/denimora logo  WhiteBg.svg" alt="Denimora Logo" />
+            <img src="/Assets/Logos&Icons/denimora-logo-WhiteBg.svg" alt="Denimora Logo" />
           </div>
 
           <div className="footer-links">
@@ -310,8 +372,8 @@ const ItemDetails = () => {
       </section>
 
       {/* Size Chart Button */}
-      <button 
-        className="side-bar-btn" 
+      <button
+        className="side-bar-btn"
         ref={sizeChartBtnRef}
         onClick={openSizeChart}
       >
@@ -326,7 +388,7 @@ const ItemDetails = () => {
         <div className="side-bar-size-chart-container">
 
           <img src="/Assets/Shop/Navy Size Chart(1).png" alt="Size Chart" />
-          
+
           <img src="/Assets/Shop/jeans  .png" alt="Jeans" />
 
         </div>
@@ -349,49 +411,57 @@ const ItemDetails = () => {
         <div className="cart-content">
           <h2>Your Cart</h2>
           <div className="cart-items">
-            {cartItems.length === 0 ? (
+            {!cartItems || cartItems.length === 0 ? (
               <p className="empty-cart">Your cart is empty</p>
             ) : (
-              cartItems.map((item, index) => (
-                <div key={`${item.product_id || item.name}-${item.size}-${index}`} className="cart-item">
-                  <div className="cart-item-image">
-                    <img src={item.image_url || item.image} alt={item.name} />
-                  </div>
-                  <div className="cart-item-details">
-                    <h3>{item.name}</h3>
-                    <p>Size: {item.size}</p>
-                    <p>Price: LE {Number(item.price).toFixed(2)}</p>
-                    <p>Total: LE {Number(item.total_price || (item.price * item.quantity)).toFixed(2)}</p>
-                    <div className="cart-item-quantity">
-                      <button onClick={() => item.product_id 
-                        ? updateQuantity(item.product_id, item.quantity - 1)
-                        : updateQuantity(item.name, item.size, item.quantity - 1)
-                      }>-</button>
-                      <span>{item.quantity}</span>
-                      <button onClick={() => item.product_id 
-                        ? updateQuantity(item.product_id, item.quantity + 1)
-                        : updateQuantity(item.name, item.size, item.quantity + 1)
-                      }>+</button>
+              cartItems.map((item, index) => {
+                console.log("Rendering cart item:", item);
+                return (
+                  <div key={`cart-item-${index}`} className="cart-item">
+                    <div className="cart-item-image">
+                      <img
+                        src={item.image_url || item.image}
+                        alt={item.name}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = '/Assets/Shop/placeholder.jpg';
+                        }}
+                      />
                     </div>
+                    <div className="cart-item-details">
+                      <h3>{item.name}</h3>
+                      {item.size && <p>Size: {item.size}</p>}
+                      <p>Price: LE {Number(item.price).toFixed(2)}</p>
+                      <p>Total: LE {Number(item.totalPrice || (item.price * item.quantity)).toFixed(2)}</p>
+                      <div className="cart-item-quantity">
+                        <button onClick={() => {
+                          const newQuantity = Math.max(1, item.quantity - 1);
+                          updateQuantity(item.name, item.size, newQuantity);
+                        }}>-</button>
+                        <span>{item.quantity}</span>
+                        <button onClick={() => {
+                          const newQuantity = item.quantity + 1;
+                          updateQuantity(item.name, item.size, newQuantity);
+                        }}>+</button>
+                      </div>
+                    </div>
+                    <button
+                      className="remove-item"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeFromCart(item.name, item.size);
+                      }}
+                    >
+                      <i className="fas fa-trash"></i>
+                    </button>
                   </div>
-                  <button 
-                    className="remove-item" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      item.product_id 
-                        ? removeFromCart(item.product_id)
-                        : removeFromCart(item.name, item.size);
-                    }}
-                  >
-                    <i className="fas fa-trash"></i>
-                  </button>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
           <div className="cart-total">
             <p>Total: <span>LE {getTotalPrice().toFixed(2)}</span></p>
-            {cartItems.length > 0 && (
+            {cartItems && cartItems.length > 0 && (
               <button className="checkout-btn" >
                 <Link to="/checkout">Checkout</Link>
               </button>

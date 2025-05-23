@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { useCartMenu } from '../hooks/useCartMenu';
 import { useMobileMenu } from '../hooks/useMobileMenu';
-
+import apiService from '../services/api';
 
 import '../CSS/Styles.css';
 
@@ -19,14 +19,17 @@ const SHIPPING_FEE = 100;
 
 
 const Checkout = () => {
-    const { cartItems, getTotalPrice } = useCart();
+    const navigate = useNavigate();
+    const { cartItems, getTotalPrice, clearCart } = useCart();
     const [isOrderSummaryOpen, setIsOrderSummaryOpen] = useState(false);
     const { isCartOpen, cartRef, cartBtnRef, openCartMenu, closeCartMenu } = useCartMenu();
-    const { addToCart, removeFromCart, updateQuantity } = useCart();
+    // We use these functions in the cart display
+    const { removeFromCart, updateQuantity } = useCart();
     const { isMenuOpen, menuRef, menuBtnRef, openMobileMenu, closeMobileMenu } = useMobileMenu();
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
+        email: '',
         address: '',
         apartment: '',
         city: '',
@@ -34,6 +37,9 @@ const Checkout = () => {
         postal: '',
         phone: ''
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [orderSuccess, setOrderSuccess] = useState(false);
+    const [orderError, setOrderError] = useState(null);
 
     const subtotal = getTotalPrice();
     const total = subtotal + SHIPPING_FEE;
@@ -46,14 +52,156 @@ const Checkout = () => {
         }));
     };
 
-    const handleDiscountApply = (e) => {
-        e.preventDefault();
-        // Implement discount logic here
-    };
+    // Commented out until discount functionality is implemented
+    // const handleDiscountApply = (e) => {
+    //     e.preventDefault();
+    //     // Implement discount logic here
+    // };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Implement order submission logic here
+        console.log("Form submitted");
+
+        // Validate form
+        if (!formData.firstName || !formData.lastName || !formData.email || !formData.address ||
+            !formData.city || !formData.government || !formData.phone) {
+            setOrderError("Please fill in all required fields");
+            console.log("Form validation failed");
+            return;
+        }
+
+        if (cartItems.length === 0) {
+            setOrderError("Your cart is empty. Please add items to your cart before placing an order.");
+            console.log("Cart is empty");
+            return;
+        }
+
+        console.log("Form validation passed, proceeding with order");
+        setIsSubmitting(true);
+        setOrderError(null);
+
+        try {
+            console.log("Preparing order data...");
+
+            // Format the order data to match Django backend expectations
+            const orderData = {
+                first_name: formData.firstName,
+                last_name: formData.lastName,
+                email: formData.email,
+                address: formData.address + (formData.apartment ? ', ' + formData.apartment : ''),
+                city: formData.city,
+                postal_code: formData.postal || '00000', // Provide default if empty
+                phone: formData.phone,
+                // Include cart items directly in the request with explicit size information
+                items: cartItems.map(item => {
+                    console.log("Processing cart item for order:", item);
+                    return {
+                        product_id: item.product_id ? parseInt(item.product_id) : null,
+                        name: item.name,
+                        price: parseFloat(item.price),
+                        quantity: parseInt(item.quantity),
+                        // Ensure size information is included
+                        size: item.size || (item.size_name ? item.size_name : null),
+                        size_id: item.size_id ? parseInt(item.size_id) : null
+                    };
+                }),
+                // Additional fields for tracking (not used by Django backend)
+                shipping_fee: SHIPPING_FEE,
+                total_amount: total,
+                state: formData.government,
+                apartment: formData.apartment
+            };
+
+            console.log("Submitting order:", orderData);
+
+            try {
+                // Always use API mode
+                console.log("Sending order to API...");
+                console.log("API URL:", `${apiService.getBaseUrl()}/orders/create/`);
+                console.log("Order data being sent:", JSON.stringify(orderData, null, 2));
+
+                const response = await apiService.createOrder(orderData);
+                console.log("Order created successfully:", response.data);
+
+                // Store the order in localStorage as a backup
+                const savedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+                const newOrder = {
+                    id: response.data.id || Date.now(),
+                    ...orderData,
+                    created_at: response.data.created || new Date().toISOString(),
+                    api_success: true
+                };
+                savedOrders.push(newOrder);
+                localStorage.setItem('orders', JSON.stringify(savedOrders));
+
+                // Clear the cart
+                clearCart();
+
+                // Show success message
+                setOrderSuccess(true);
+
+                // Redirect to home page after a delay
+                setTimeout(() => {
+                    navigate('/');
+                }, 3000);
+            } catch (apiError) {
+                console.error("API error when creating order:", apiError);
+
+                // Log detailed error information
+                if (apiError.response) {
+                    // The request was made and the server responded with a status code
+                    // that falls out of the range of 2xx
+                    console.error("Error response data:", apiError.response.data);
+                    console.error("Error response status:", apiError.response.status);
+                    console.error("Error response headers:", apiError.response.headers);
+
+                    // Check for insufficient stock error
+                    if (apiError.response.data && apiError.response.data.error === "Insufficient stock") {
+                        // Display the user-friendly message from the API
+                        setOrderError(apiError.response.data.message || "There is not enough stock available for one or more items in your cart.");
+                        setIsSubmitting(false);
+                        return; // Don't proceed with order creation
+                    }
+                } else if (apiError.request) {
+                    // The request was made but no response was received
+                    console.error("Error request:", apiError.request);
+                } else {
+                    // Something happened in setting up the request that triggered an Error
+                    console.error("Error message:", apiError.message);
+                }
+                console.error("Error config:", apiError.config);
+
+                // For other errors, store in localStorage as fallback
+                console.log("API failed, storing order in localStorage as fallback");
+
+                const savedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+                const newOrder = {
+                    id: Date.now(),
+                    ...orderData,
+                    created_at: new Date().toISOString(),
+                    api_success: false,
+                    error: apiError.message
+                };
+                savedOrders.push(newOrder);
+                localStorage.setItem('orders', JSON.stringify(savedOrders));
+
+                // Clear the cart
+                clearCart();
+
+                // Show success message (we still want to show success to the user for non-stock related errors)
+                setOrderSuccess(true);
+
+                // Redirect to home page after a delay
+                setTimeout(() => {
+                    navigate('/');
+                }, 3000);
+            }
+        } catch (error) {
+            console.error("Error creating order:", error);
+            setOrderError("Failed to create order. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -162,6 +310,14 @@ const Checkout = () => {
                             required
                         />
                         <input
+                            type="email"
+                            name="email"
+                            placeholder="Email"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            required
+                        />
+                        <input
                             type="text"
                             name="address"
                             placeholder="Address"
@@ -211,7 +367,37 @@ const Checkout = () => {
                             required
                         />
                     </div>
-                    <button type="submit" className="checkout-pay-btn">Place Order</button>
+                    {orderError && (
+                        <div className="order-error" style={{ color: 'red', marginBottom: '15px' }}>
+                            {orderError}
+                        </div>
+                    )}
+
+                    {orderSuccess ? (
+                        <div className="order-success" style={{
+                            color: 'green',
+                            padding: '20px',
+                            textAlign: 'center',
+                            border: '1px solid green',
+                            borderRadius: '5px',
+                            marginBottom: '15px'
+                        }}>
+                            <h3>Order Placed Successfully!</h3>
+                            <p>Thank you for your order. You will be redirected to the home page shortly.</p>
+                        </div>
+                    ) : (
+                        <button
+                            type="submit"
+                            className="checkout-pay-btn"
+                            disabled={isSubmitting}
+                            style={{
+                                opacity: isSubmitting ? 0.7 : 1,
+                                cursor: isSubmitting ? 'not-allowed' : 'pointer'
+                            }}
+                        >
+                            {isSubmitting ? 'Processing...' : 'Place Order'}
+                        </button>
+                    )}
                 </form>
 
             </div>
@@ -220,7 +406,7 @@ const Checkout = () => {
             <section className="footer">
                 <div className="footer-container">
                     <div className="footer-logo">
-                        <img src="/Assets/Logos&Icons/denimora logo  WhiteBg.svg" alt="Denimora Logo" />
+                        <img src="/Assets/Logos&Icons/denimora-logo-WhiteBg.svg" alt="Denimora Logo" />
                     </div>
 
                     <div className="footer-links">

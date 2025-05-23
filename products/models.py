@@ -26,6 +26,17 @@ class Category(models.Model):
         super().save(*args, **kwargs)
 
 
+class Size(models.Model):
+    name = models.CharField(max_length=10)
+    order = models.PositiveIntegerField(default=0)
+    
+    class Meta:
+        ordering = ('order',)
+    
+    def __str__(self):
+        return self.name
+
+
 class Product(models.Model):
     category = models.ForeignKey(Category, related_name='products', on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
@@ -33,6 +44,7 @@ class Product(models.Model):
     image = models.ImageField(upload_to='products/%Y/%m/%d', blank=True)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    sizes = models.ManyToManyField(Size, related_name='products', blank=True)
     stock = models.PositiveIntegerField(default=1)
     available = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
@@ -60,3 +72,18 @@ class Product(models.Model):
         if self.image and hasattr(self.image, 'url'):
             return self.image.url
         return '/static/Assets/Shop/default-product.jpg'
+
+
+class ProductSize(models.Model):
+    """
+    Represents the stock quantity for a specific product-size combination
+    """
+    product = models.ForeignKey(Product, related_name='product_sizes', on_delete=models.CASCADE)
+    size = models.ForeignKey(Size, related_name='product_sizes', on_delete=models.CASCADE)
+    stock = models.PositiveIntegerField(default=0)
+    
+    class Meta:
+        unique_together = ('product', 'size')
+    
+    def __str__(self):
+        return f"{self.product.name} - {self.size.name} ({self.stock} in stock)"

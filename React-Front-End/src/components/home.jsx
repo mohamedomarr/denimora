@@ -159,7 +159,7 @@ const Home = () => {
       <section className="footer">
         <div className="footer-container">
           <div className="footer-logo">
-            <img src="/Assets/Logos&Icons/denimora logo  WhiteBg.svg" alt="Denimora Logo" />
+            <img src="/Assets/Logos&Icons/denimora-logo-WhiteBg.svg" alt="Denimora Logo" />
           </div>
 
           <div className="footer-links">

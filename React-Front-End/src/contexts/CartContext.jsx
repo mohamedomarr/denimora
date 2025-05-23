@@ -13,10 +13,10 @@ export const CartProvider = ({ children }) => {
   const handleApiError = (error, actionType) => {
     console.error(`Error during ${actionType}:`, error);
     setError(`Failed to ${actionType}. Using local storage instead.`);
-    
+
     // When any API operation fails, switch to localStorage mode
     setIsUsingAPI(false);
-    
+
     // Initialize from localStorage if we're switching modes after an error
     if (actionType === 'initialize cart') {
       const savedCart = localStorage.getItem('cart');
@@ -26,8 +26,35 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // Initialize cart from localStorage or API on initial load
+  // Initialize cart from localStorage on initial load
   useEffect(() => {
+    console.log("Initializing cart...");
+
+    // Always initialize from localStorage for reliability
+    const savedCart = localStorage.getItem('cart');
+    if (savedCart) {
+      try {
+        const parsedCart = JSON.parse(savedCart);
+        console.log("Loaded cart from localStorage:", parsedCart);
+        setCartItems(parsedCart);
+      } catch (error) {
+        console.error("Error parsing cart from localStorage:", error);
+        // If there's an error parsing the cart, start with an empty cart
+        setCartItems([]);
+        localStorage.setItem('cart', JSON.stringify([]));
+      }
+    } else {
+      console.log("No cart found in localStorage, starting with empty cart");
+      setCartItems([]);
+    }
+
+    // Disable API mode for now to ensure functionality
+    setIsUsingAPI(false);
+    setIsLoading(false);
+
+    // We'll keep this code commented out for future reference
+    // when we want to re-enable API mode
+    /*
     const initializeCart = async () => {
       try {
         // Try to get cart from API first
@@ -51,182 +78,148 @@ export const CartProvider = ({ children }) => {
         setIsLoading(false);
       }
     };
-
-    initializeCart();
+    */
   }, []);
 
-  // Save cart to localStorage when using localStorage mode
+  // Save cart to localStorage whenever it changes
   useEffect(() => {
-    if (!isUsingAPI && !isLoading) {
+    if (!isLoading) {
       localStorage.setItem('cart', JSON.stringify(cartItems));
-      console.log("Saved cart to localStorage", cartItems);
+      console.log("Saved cart to localStorage:", cartItems);
     }
-  }, [cartItems, isUsingAPI, isLoading]);
+  }, [cartItems, isLoading]);
 
-  const addToCart = async (item) => {
-    try {
-      if (isUsingAPI) {
-        // API mode
-        await apiService.addToCart(
-          item.product_id, 
-          item.quantity, 
-          true // override quantity
-        );
-        
-        // Refresh cart after adding item
-        const response = await apiService.getCart();
-        if (response.data && response.data.items) {
-          setCartItems(response.data.items);
-          console.log("Item added to cart via API");
-        }
-      } else {
-        // localStorage mode
-        setCartItems(prevItems => {
-          // Check if item already exists in cart with same ID or name+size combination
-          const existingItemIndex = prevItems.findIndex(
-            cartItem => (item.product_id && cartItem.product_id === item.product_id) || 
-                       (!item.product_id && cartItem.name === item.name && cartItem.size === item.size)
-          );
+  const addToCart = (item) => {
+    console.log("CartContext: addToCart called with item:", item);
 
-          if (existingItemIndex > -1) {
-            // Update quantity if item exists
-            const updatedItems = [...prevItems];
-            updatedItems[existingItemIndex] = {
-              ...updatedItems[existingItemIndex],
-              quantity: item.quantity,
-              totalPrice: item.price * item.quantity
-            };
-            console.log("Updated existing item in localStorage cart");
-            return updatedItems;
-          } else {
-            // Add new item if it doesn't exist
-            console.log("Added new item to localStorage cart");
-            return [...prevItems, {
-              ...item,
-              totalPrice: item.price * item.quantity
-            }];
+    // Ensure we have the required fields
+    if (!item || (!item.name && !item.product_id)) {
+      console.error("Invalid item data:", item);
+      return;
+    }
+
+    // Always use localStorage mode for now to ensure functionality
+    // We can re-enable API mode once the basic functionality works
+    const useLocalStorage = true; // Force localStorage mode for reliability
+
+    if (!useLocalStorage && isUsingAPI && item.product_id) {
+      // API mode implementation (disabled for now)
+      console.log("API mode is currently disabled for reliability");
+    }
+
+    // Use synchronous localStorage update to ensure immediate UI feedback
+    setCartItems(prevItems => {
+      console.log("Current cart items:", prevItems);
+
+      // Check if item already exists in cart with same ID or name+size combination
+      const existingItemIndex = prevItems.findIndex(
+        cartItem => {
+          // Match by product_id if both items have it
+          if (item.product_id && cartItem.product_id) {
+            return cartItem.product_id === item.product_id &&
+                  (item.size_id ? cartItem.size_id === item.size_id : cartItem.size === item.size);
           }
-        });
+          // Otherwise match by name and size
+          return cartItem.name === item.name && cartItem.size === item.size;
+        }
+      );
+
+      if (existingItemIndex > -1) {
+        // Update quantity if item exists
+        const updatedItems = [...prevItems];
+        updatedItems[existingItemIndex] = {
+          ...updatedItems[existingItemIndex],
+          quantity: item.quantity,
+          totalPrice: item.price * item.quantity
+        };
+        console.log("Updated existing item in cart:", updatedItems[existingItemIndex]);
+        return updatedItems;
+      } else {
+        // Add new item if it doesn't exist
+        const newItem = {
+          ...item,
+          totalPrice: item.price * item.quantity
+        };
+        console.log("Added new item to cart:", newItem);
+        return [...prevItems, newItem];
       }
-    } catch (error) {
-      handleApiError(error, 'add item to cart');
-      
-      // If API fails, add to localStorage cart
-      addToCart(item);
-    }
+    });
+
+    // Save to localStorage immediately
+    setTimeout(() => {
+      const currentCart = JSON.parse(localStorage.getItem('cart') || '[]');
+      console.log("Current localStorage cart:", currentCart);
+    }, 100);
   };
 
-  const removeFromCart = async (productIdOrName, size) => {
-    try {
-      if (isUsingAPI && typeof productIdOrName === 'number') {
-        // API mode with product_id
-        await apiService.removeFromCart(productIdOrName);
-        
-        // Refresh cart after removing item
-        const response = await apiService.getCart();
-        if (response.data && response.data.items) {
-          setCartItems(response.data.items);
-          console.log("Item removed from cart via API");
+  const removeFromCart = (productIdOrName, size) => {
+    console.log("CartContext: removeFromCart called with:", productIdOrName, size);
+
+    // Use synchronous localStorage update for reliability
+    setCartItems(prevItems => {
+      const filteredItems = prevItems.filter(item => {
+        if (typeof productIdOrName === 'number') {
+          // If we're looking for a product by ID
+          if (size) {
+            // If size is provided, match both product_id and size_id
+            return !(item.product_id === productIdOrName && item.size_id === size);
+          }
+          // Otherwise just match by product_id
+          return item.product_id !== productIdOrName;
+        } else {
+          // If we're looking for a product by name
+          return !(item.name === productIdOrName && item.size === size);
         }
-      } else {
-        // localStorage mode or using name+size
-        setCartItems(prevItems => {
-          const filteredItems = prevItems.filter(item => 
-            // Filter by product_id if it exists
-            (typeof productIdOrName === 'number' && item.product_id !== productIdOrName) ||
-            // Otherwise filter by name and size
-            (typeof productIdOrName === 'string' && !(item.name === productIdOrName && item.size === size))
-          );
-          console.log("Item removed from localStorage cart");
-          return filteredItems;
-        });
-      }
-    } catch (error) {
-      handleApiError(error, 'remove item from cart');
-      
-      // If API fails, remove from localStorage cart
-      if (typeof productIdOrName === 'number') {
-        setCartItems(prevItems => 
-          prevItems.filter(item => item.product_id !== productIdOrName)
-        );
-      }
-    }
+      });
+      console.log("Item removed from cart, remaining items:", filteredItems);
+      return filteredItems;
+    });
   };
 
-  const updateQuantity = async (productIdOrName, newQuantity, size) => {
-    if (newQuantity < 1) return;
-    
-    try {
-      if (isUsingAPI && typeof productIdOrName === 'number') {
-        // API mode with product_id
-        await apiService.addToCart(productIdOrName, newQuantity, true);
-        
-        // Refresh cart after updating quantity
-        const response = await apiService.getCart();
-        if (response.data && response.data.items) {
-          setCartItems(response.data.items);
-          console.log("Quantity updated via API");
-        }
-      } else {
-        // localStorage mode or using name+size
-        setCartItems(prevItems => {
-          const updatedItems = prevItems.map(item => {
-            // Match by product_id if it exists
-            if (typeof productIdOrName === 'number' && item.product_id === productIdOrName) {
-              return { 
-                ...item, 
-                quantity: newQuantity,
-                totalPrice: item.price * newQuantity
-              };
-            }
-            // Otherwise match by name and size
-            if (typeof productIdOrName === 'string' && item.name === productIdOrName && item.size === size) {
-              return { 
-                ...item, 
-                quantity: newQuantity,
-                totalPrice: item.price * newQuantity
-              };
-            }
+  const updateQuantity = (productIdOrName, size, newQuantity) => {
+    console.log("CartContext: updateQuantity called with:", productIdOrName, size, newQuantity);
+
+    if (newQuantity < 1) {
+      console.log("Quantity must be at least 1, ignoring update");
+      return;
+    }
+
+    // Use synchronous localStorage update for reliability
+    setCartItems(prevItems => {
+      const updatedItems = prevItems.map(item => {
+        // Match by product_id if both have it
+        if (typeof productIdOrName === 'number' && item.product_id === productIdOrName) {
+          // If size is provided, match both product_id and size_id
+          if (size && item.size_id !== size) {
             return item;
-          });
-          console.log("Quantity updated in localStorage cart");
-          return updatedItems;
-        });
-      }
-    } catch (error) {
-      handleApiError(error, 'update quantity');
-      
-      // If API fails, update in localStorage cart
-      if (typeof productIdOrName === 'number') {
-        setCartItems(prevItems =>
-          prevItems.map(item => 
-            item.product_id === productIdOrName 
-              ? { ...item, quantity: newQuantity, totalPrice: item.price * newQuantity }
-              : item
-          )
-        );
-      }
-    }
+          }
+          console.log(`Updating quantity for item with product_id ${productIdOrName} to ${newQuantity}`);
+          return {
+            ...item,
+            quantity: newQuantity,
+            totalPrice: item.price * newQuantity
+          };
+        }
+        // Otherwise match by name and size
+        if (typeof productIdOrName === 'string' && item.name === productIdOrName && item.size === size) {
+          console.log(`Updating quantity for item "${item.name}" (size: ${size}) to ${newQuantity}`);
+          return {
+            ...item,
+            quantity: newQuantity,
+            totalPrice: item.price * newQuantity
+          };
+        }
+        return item;
+      });
+      return updatedItems;
+    });
   };
 
-  const clearCart = async () => {
-    try {
-      if (isUsingAPI) {
-        // API mode
-        await apiService.clearCart();
-        setCartItems([]);
-        console.log("Cart cleared via API");
-      } else {
-        // localStorage mode
-        setCartItems([]);
-        console.log("Cart cleared in localStorage");
-      }
-    } catch (error) {
-      handleApiError(error, 'clear cart');
-      
-      // If API fails, clear localStorage cart
-      setCartItems([]);
-    }
+  const clearCart = () => {
+    console.log("CartContext: clearCart called");
+    setCartItems([]);
+    localStorage.setItem('cart', JSON.stringify([]));
+    console.log("Cart cleared");
   };
 
   const getTotalPrice = () => {
@@ -263,4 +256,4 @@ export const useCart = () => {
     throw new Error('useCart must be used within a CartProvider');
   }
   return context;
-}; 
+};

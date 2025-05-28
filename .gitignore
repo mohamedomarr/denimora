@@ -181,3 +181,5 @@ node_modules/
 .env.test
 .env.production
 oringal-react
+React-Front-End/.DS_Store
+.DS_Store

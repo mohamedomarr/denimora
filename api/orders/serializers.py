@@ -47,19 +47,63 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         from products.models import Product, ProductSize
         from django.db import transaction
 
-        # First, validate stock for all items before creating the order
+        # Determine data source: either from request items or session cart
+        cart_items = []
         if items_data:
-            print(f"Validating stock for {len(items_data)} items")
+            # Use items from request data
+            print(f"Using items from request data: {len(items_data)} items")
             for item_data in items_data:
-                product_id = item_data.get('product_id')
+                cart_items.append({
+                    'product_id': item_data.get('product_id'),
+                    'name': item_data.get('name'),
+                    'price': item_data['price'],
+                    'quantity': item_data['quantity'],
+                    'size_name': item_data.get('size'),
+                    'size_id': item_data.get('size_id'),
+                    'is_request_item': True
+                })
+        else:
+            # Fallback to session cart
+            print("No items in request data, checking session cart")
+            from cart.cart import Cart
+            cart = Cart(request)
+            
+            for item in cart:
+                size_id = None
+                size_name = None
+                
+                # Extract size information from cart item
+                if 'size' in item and hasattr(item['size'], 'id'):
+                    size_id = item['size'].id
+                    size_name = item['size'].name
+                elif 'size_id' in item:
+                    size_id = item['size_id']
+                    size_name = item.get('size_name', None)
+                
+                cart_items.append({
+                    'product_id': item['product'].id if item['product'] else None,
+                    'product': item['product'],
+                    'name': item['product'].name if item['product'] else item.get('name', ''),
+                    'price': item['price'],
+                    'quantity': item['quantity'],
+                    'size_name': size_name,
+                    'size_id': size_id,
+                    'is_request_item': False
+                })
+
+        # Validate stock for all items before creating the order
+        if cart_items:
+            print(f"Validating stock for {len(cart_items)} items")
+            for cart_item in cart_items:
+                product_id = cart_item.get('product_id')
                 if not product_id:
                     continue  # Skip validation for custom items without product_id
 
                 try:
-                    product = Product.objects.get(id=product_id)
-                    quantity = item_data['quantity']
-                    size_id = item_data.get('size_id')
-                    size_name = item_data.get('size')
+                    product = cart_item.get('product') if not cart_item['is_request_item'] else Product.objects.get(id=product_id)
+                    quantity = cart_item['quantity']
+                    size_id = cart_item.get('size_id')
+                    size_name = cart_item.get('size_name')
 
                     # Check stock for product with specific size
                     if size_id:
@@ -95,7 +139,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
                 except Product.DoesNotExist:
                     print(f"Product with ID {product_id} not found")
 
-        # Use transaction to ensure all operations succeed or fail together
+        # Use single transaction to ensure all operations succeed or fail together
         with transaction.atomic():
             # Create the order
             order = Order.objects.create(
@@ -103,161 +147,66 @@ class OrderCreateSerializer(serializers.ModelSerializer):
                 **validated_data
             )
 
-            # Process items from the request data
-            if items_data:
-                print(f"Creating order items from request data: {len(items_data)} items")
-                for item_data in items_data:
-                    product_id = item_data.get('product_id')
+            # Process all cart items
+            if cart_items:
+                print(f"Creating order items: {len(cart_items)} items")
+                for cart_item in cart_items:
+                    product_id = cart_item.get('product_id')
                     product = None
 
                     if product_id:
-                        try:
-                            product = Product.objects.get(id=product_id)
-                        except Product.DoesNotExist:
-                            print(f"Product with ID {product_id} not found")
+                        if cart_item['is_request_item']:
+                            try:
+                                product = Product.objects.get(id=product_id)
+                            except Product.DoesNotExist:
+                                print(f"Product with ID {product_id} not found")
+                        else:
+                            product = cart_item.get('product')
 
                     # Create the order item with size information
                     OrderItem.objects.create(
                         order=order,
                         product=product,  # Can be None for custom items
-                        price=item_data['price'],
-                        quantity=item_data['quantity'],
-                        size_name=item_data.get('size'),
-                        size_id=item_data.get('size_id')
+                        price=cart_item['price'],
+                        quantity=cart_item['quantity'],
+                        size_name=cart_item.get('size_name'),
+                        size_id=cart_item.get('size_id')
                     )
 
-                    # Update inventory if product and size_id exist
-                    if product and item_data.get('size_id'):
-                        try:
-                            product_size = ProductSize.objects.get(
-                                product=product,
-                                size_id=item_data.get('size_id')
-                            )
-                            # We already validated stock, so we can safely decrease it
-                            product_size.stock -= item_data['quantity']
-                            product_size.save()
-                            print(f"Updated inventory for {product.name}, size ID {item_data.get('size_id')}: new stock = {product_size.stock}")
-                        except ProductSize.DoesNotExist:
-                            print(f"Warning: ProductSize not found for product ID {product.id}, size ID {item_data.get('size_id')}")
-                    # Also update the general product stock as a fallback
-                    elif product:
-                        # We already validated stock, so we can safely decrease it
-                        product.stock -= item_data['quantity']
-                        product.save()
-                        print(f"Updated general inventory for {product.name}: new stock = {product.stock}")
+                    # Update inventory if product exists
+                    if product:
+                        size_id = cart_item.get('size_id')
+                        quantity = cart_item['quantity']
+                        
+                        if size_id:
+                            try:
+                                product_size = ProductSize.objects.get(
+                                    product=product,
+                                    size_id=size_id
+                                )
+                                # We already validated stock, so we can safely decrease it
+                                product_size.stock -= quantity
+                                product_size.save()
+                                print(f"Updated inventory for {product.name}, size ID {size_id}: new stock = {product_size.stock}")
+                            except ProductSize.DoesNotExist:
+                                print(f"Warning: ProductSize not found for product ID {product.id}, size ID {size_id}")
+                                # Fallback to general product stock
+                                product.stock -= quantity
+                                product.save()
+                                print(f"Updated general inventory for {product.name}: new stock = {product.stock}")
+                        else:
+                            # Update general product stock
+                            product.stock -= quantity
+                            product.save()
+                            print(f"Updated general inventory for {product.name}: new stock = {product.stock}")
 
-            return order
-
-        # Fallback to session cart if no items in request
-        print("No items in request data, checking session cart")
-        from cart.cart import Cart
-        cart = Cart(request)
-
-        # First, validate stock for all items in the cart
-        if len(cart) > 0:
-            print(f"Validating stock for {len(cart)} items in session cart")
-            for item in cart:
-                product = item['product']
-                quantity = item['quantity']
-                size_id = None
-                size_name = None
-
-                # Extract size information
-                if 'size' in item and hasattr(item['size'], 'id'):
-                    size_id = item['size'].id
-                    size_name = item['size'].name
-                elif 'size_id' in item:
-                    size_id = item['size_id']
-                    size_name = item.get('size_name', None)
-
-                # Check stock for product with specific size
-                if product and size_id:
-                    try:
-                        product_size = ProductSize.objects.get(
-                            product=product,
-                            size_id=size_id
-                        )
-                        if product_size.stock < quantity:
-                            raise InsufficientStockError(
-                                product.name,
-                                size_name or product_size.size.name,
-                                quantity,
-                                product_size.stock
-                            )
-                    except ProductSize.DoesNotExist:
-                        # If ProductSize doesn't exist, check general product stock
-                        if product.stock < quantity:
-                            raise InsufficientStockError(
-                                product.name,
-                                None,
-                                quantity,
-                                product.stock
-                            )
-                # Check general product stock if no size specified
-                elif product and product.stock < quantity:
-                    raise InsufficientStockError(
-                        product.name,
-                        None,
-                        quantity,
-                        product.stock
-                    )
-
-        # Use transaction to ensure all operations succeed or fail together
-        with transaction.atomic():
-            # Create the order
-            order = Order.objects.create(
-                user=user,
-                **validated_data
-            )
-
-            if len(cart) > 0:
-                print(f"Creating order items from session cart: {len(cart)} items")
-                for item in cart:
-                    # Extract size information from cart item
-                    size_name = item.get('size_name', None)
-                    size_id = None
-
-                    # Try to get size_id from different possible structures
-                    if 'size' in item and hasattr(item['size'], 'id'):
-                        size_id = item['size'].id
-                        size_name = item['size'].name
-                    elif 'size_id' in item:
-                        size_id = item['size_id']
-
-                    # Create order item with size information
-                    OrderItem.objects.create(
-                        order=order,
-                        product=item['product'],
-                        price=item['price'],
-                        quantity=item['quantity'],
-                        size_name=size_name,
-                        size_id=size_id
-                    )
-
-                    # Update inventory if product and size_id exist
-                    product = item['product']
-                    if product and size_id:
-                        try:
-                            product_size = ProductSize.objects.get(
-                                product=product,
-                                size_id=size_id
-                            )
-                            # We already validated stock, so we can safely decrease it
-                            product_size.stock -= item['quantity']
-                            product_size.save()
-                            print(f"Updated inventory for {product.name}, size ID {size_id}: new stock = {product_size.stock}")
-                        except ProductSize.DoesNotExist:
-                            print(f"Warning: ProductSize not found for product ID {product.id}, size ID {size_id}")
-                    # Also update the general product stock as a fallback
-                    elif product:
-                        # We already validated stock, so we can safely decrease it
-                        product.stock -= item['quantity']
-                        product.save()
-                        print(f"Updated general inventory for {product.name}: new stock = {product.stock}")
-
-                # Clear the cart
-                cart.clear()
+                # Clear the session cart if we used it
+                if not items_data:
+                    from cart.cart import Cart
+                    cart = Cart(request)
+                    cart.clear()
+                    print("Session cart cleared")
             else:
-                print("No items in session cart either")
+                print("No items to process")
 
         return order

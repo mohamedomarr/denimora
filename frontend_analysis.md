@@ -1,6 +1,7 @@
 # Frontend Analysis for E-commerce Backend Integration
 
 ## Overview
+that's an analyhsis
 The frontend consists of three main HTML pages, JavaScript functionality, and CSS styling. The analysis below identifies key integration points for the Django backend.
 
 ## HTML Pages

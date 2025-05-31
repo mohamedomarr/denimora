@@ -1,6 +1,9 @@
 from django.contrib import admin
 from .models import Category, Product, Size, ProductSize
 
+admin.site.site_header = "DENIMORA Admin Dashboard"
+admin.site.index_title = "Admin Settings"
+
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ['name', 'slug']

@@ -459,14 +459,14 @@ const Home = () => {
 
           <div className="footer-socials">
             <a
-              href="https://www.facebook.com/profile.php?id=61575880045988"
+              href="https://www.facebook.com/share/1P42RQpVK6/?mibextid=wwXIfr"
               className="fab fa-facebook-f"
             ></a>
             <a
               href="https://www.instagram.com/denimora25"
               className="fab fa-instagram"
             ></a>
-            <a href="#" className="fab fa-tiktok"></a>
+            <a href="https://www.tiktok.com/@denimora25?_t=ZS-8wqteSQA6lz&_r=1" className="fab fa-tiktok"></a>
           </div>
 
           <p className="footer-credit">

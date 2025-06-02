@@ -276,9 +276,11 @@ header .shop-page-icons div:hover {
 
 .products-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 2rem;
     padding: 0 4rem;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
 .product-card {
@@ -390,8 +392,35 @@ p {
     background: var(--Gold--);
     color: var(--Site-Bg--);
     border: 2.5px solid var(--Gold--);
+}
 
+/* Add styles for disabled size buttons */
+.size-btns button.disabled,
+.popup-content .size-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    position: relative;
+    border-color: var(--Gold--);
+    color: var(--text-color--);
+}
 
+.size-btns button.disabled::after,
+.popup-content .size-btn.disabled::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -5%;
+    width: 110%;
+    height: 1px;
+    background-color: var(--Gold--);
+    transform: rotate(45deg);
+    transform-origin: center;
+}
+
+.size-btns button.disabled:hover,
+.popup-content .size-btn.disabled:hover {
+    background-color: var(--Site-Bg--);
+    color: #666;
 }
 
 .popup-content .btn[disabled] {
@@ -1558,7 +1587,7 @@ p {
     }
 
     .products-container {
-        padding: 0 2rem;
+        grid-template-columns: repeat(3, 1fr);
     }
 
 }
@@ -1613,8 +1642,8 @@ p {
     }
 
     .products-container {
-        padding: 0 1rem;
-        gap: 1.5rem;
+        grid-template-columns: repeat(2, 1fr);
+        padding: 0 2rem;
     }
 
     .product-card h3 {
@@ -2247,69 +2276,69 @@ p {
 
 /* Shop Page Specific Styles */
 .error-banner {
-    background-color: #ff3860;
-    color: white;
-    text-align: center;
-    padding: 1rem;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 2000;
+  background-color: #ff3860;
+  color: white;
+  text-align: center;
+  padding: 1rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2000;
 }
 
 .fallback-notice {
-    color: var(--Gold--);
-    font-size: 0.9rem;
-    margin-top: 0.5rem;
-    text-align: center;
+  color: var(--Gold--);
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  text-align: center;
 }
 
 .no-products {
-    color: var(--text-color--);
-    font-size: 1.2rem;
-    text-align: center;
-    grid-column: 1 / -1;
-    padding: 2rem;
+  color: var(--text-color--);
+  font-size: 1.2rem;
+  text-align: center;
+  grid-column: 1 / -1;
+  padding: 2rem;
 }
 
 .loading-sizes,
 .no-sizes {
-    color: var(--text-color--);
-    text-align: center;
-    width: 100%;
-    padding: 1rem;
+  color: var(--text-color--);
+  text-align: center;
+  width: 100%;
+  padding: 1rem;
 }
 
 /* Responsive Styles for Shop Page */
 @media (max-width: 768px) {
-    .popup-content {
-        width: 95%;
-        padding: 2rem 1rem;
-    }
+  .popup-content {
+    width: 95%;
+    padding: 2rem 1rem;
+  }
 
-    .popup-content .size-btns {
-        flex-wrap: wrap;
-    }
+  .popup-content .size-btns {
+    flex-wrap: wrap;
+  }
 
-    .popup-content .size-btn {
-        min-width: 3rem;
-        padding: 0.4rem 0.8rem;
-        font-size: 0.9rem;
-    }
+  .popup-content .size-btn {
+    min-width: 3rem;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+  }
 }
 
 @media (max-width: 576px) {
-    .error-banner {
-        font-size: 0.9rem;
-        padding: 0.8rem;
-    }
+  .error-banner {
+    font-size: 0.9rem;
+    padding: 0.8rem;
+  }
 
-    .fallback-notice {
-        font-size: 0.8rem;
-    }
+  .fallback-notice {
+    font-size: 0.8rem;
+  }
 
-    .no-products {
-        font-size: 1rem;
-    }
+  .no-products {
+    font-size: 1rem;
+  }
 }

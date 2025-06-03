@@ -230,6 +230,11 @@ const apiService = {
     return API.get('/orders/shipping-cost/', { params });
   },
   getGovernoratesShipping: () => API.get('/orders/governorates/'),
+  
+  // Communications - NEW
+  subscribeEmail: (email, source = 'popup') => API.post('/communications/subscribe/', { email, source }),
+  submitContactMessage: (name, email, message) => API.post('/communications/contact/', { name, email, message }),
+  unsubscribeEmail: (email) => API.post('/communications/unsubscribe/', { email }),
 };
 
 export default apiService; 

@@ -155,6 +155,22 @@ class OrderCreateSerializer(serializers.ModelSerializer):
                 **validated_data
             )
 
+            # Add email to consolidated email list
+            try:
+                from communications.utils import add_to_email_list
+                name = f"{order.first_name} {order.last_name}".strip()
+                add_to_email_list(
+                    email=order.email,
+                    name=name,
+                    source='order',
+                    user=user,
+                    increment_order=True
+                )
+            except ImportError:
+                print("Communications app not available - skipping email list update")
+            except Exception as e:
+                print(f"Error updating email list: {e}")
+
             # Process all cart items
             if cart_items:
                 print(f"Creating order items: {len(cart_items)} items")

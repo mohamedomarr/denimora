@@ -4,6 +4,7 @@ import { usePopup } from "../hooks/usePopup";
 import { useMobileMenu } from "../hooks/useMobileMenu";
 import { useCartMenu } from "../hooks/useCartMenu";
 import { useCart } from "../contexts/CartContext";
+import apiService from "../services/api";
 
 import "../CSS/bootstrap.css";
 import "../CSS/Styles.css";
@@ -105,22 +106,32 @@ const Home = () => {
 
     setIsSubscribing(true);
     try {
-      // TODO: Add your API call here to handle email subscription
-      // For now, we'll simulate a successful subscription
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await apiService.subscribeEmail(subscriptionForm.email, 'popup');
+      
+      if (response.data.success) {
+        setSubscriptionSuccess(true);
+        setSubscriptionForm({ email: "" });
 
-      setSubscriptionSuccess(true);
-      setSubscriptionForm({ email: "" });
-
-      // Reset success message after 5 seconds
-      setTimeout(() => {
-        setSubscriptionSuccess(false);
-        closePopup();
-      }, 5000);
+        // Reset success message after 5 seconds
+        setTimeout(() => {
+          setSubscriptionSuccess(false);
+          closePopup();
+        }, 5000);
+      } else {
+        setSubscriptionErrors({
+          email: response.data.error || "Failed to subscribe. Please try again.",
+        });
+      }
     } catch (error) {
       console.error("Error subscribing:", error);
+      let errorMessage = "Failed to subscribe. Please try again.";
+      
+      if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      }
+      
       setSubscriptionErrors({
-        email: "Failed to subscribe. Please try again.",
+        email: errorMessage,
       });
     } finally {
       setIsSubscribing(false);
@@ -158,8 +169,8 @@ const Home = () => {
     if (!contactForm.message.trim()) {
       newErrors.message = "Message is required";
       isValid = false;
-    } else if (contactForm.message.trim().length > 50) {
-      newErrors.message = "Message Should not exceed 50 characters";
+    } else if (contactForm.message.trim().length > 500) {
+      newErrors.message = "Message should not exceed 500 characters";
       isValid = false;
     }
 
@@ -191,27 +202,60 @@ const Home = () => {
 
     setIsSubmitting(true);
     try {
-      // TODO: Add your API call here to send the contact form data
-      // For now, we'll simulate a successful submission
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await apiService.submitContactMessage(
+        contactForm.name,
+        contactForm.email,
+        contactForm.message
+      );
+      
+      if (response.data.success) {
+        setSubmitSuccess(true);
+        setContactForm({
+          name: "",
+          email: "",
+          message: "",
+        });
 
-      setSubmitSuccess(true);
-      setContactForm({
-        name: "",
-        email: "",
-        message: "",
-      });
-
-      // Reset success message after 5 seconds
-      setTimeout(() => {
-        setSubmitSuccess(false);
-      }, 5000);
+        // Reset success message after 5 seconds
+        setTimeout(() => {
+          setSubmitSuccess(false);
+        }, 5000);
+      } else {
+        // Handle validation errors from the API
+        if (response.data.errors) {
+          setContactErrors((prev) => ({
+            ...prev,
+            ...response.data.errors,
+          }));
+        } else {
+          setContactErrors((prev) => ({
+            ...prev,
+            submit: response.data.error || "Failed to send message. Please try again.",
+          }));
+        }
+      }
     } catch (error) {
       console.error("Error submitting contact form:", error);
-      setContactErrors((prev) => ({
-        ...prev,
-        submit: "Failed to send message. Please try again.",
-      }));
+      let errorMessage = "Failed to send message. Please try again.";
+      
+      if (error.response?.data?.errors) {
+        // Handle field-specific errors
+        setContactErrors((prev) => ({
+          ...prev,
+          ...error.response.data.errors,
+        }));
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+        setContactErrors((prev) => ({
+          ...prev,
+          submit: errorMessage,
+        }));
+      } else {
+        setContactErrors((prev) => ({
+          ...prev,
+          submit: errorMessage,
+        }));
+      }
     } finally {
       setIsSubmitting(false);
     }

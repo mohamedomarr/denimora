@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import { useCartMenu } from "../hooks/useCartMenu";
@@ -36,7 +36,7 @@ const governments = [
   "Sohag",
 ];
 
-const SHIPPING_FEE = 100;
+const DEFAULT_SHIPPING_FEE = 100; // Fallback if API fails
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -67,8 +67,47 @@ const Checkout = () => {
     phone: "",
   });
 
+  // NEW: Dynamic shipping state
+  const [shippingFee, setShippingFee] = useState(DEFAULT_SHIPPING_FEE);
+  const [isLoadingShipping, setIsLoadingShipping] = useState(false);
+  const [shippingError, setShippingError] = useState(null);
+
   const subtotal = getTotalPrice();
-  const total = subtotal + SHIPPING_FEE;
+  const total = subtotal + shippingFee; // Use dynamic shipping fee
+
+  // NEW: Function to fetch shipping cost
+  const fetchShippingCost = async (governorate) => {
+    if (!governorate) {
+      setShippingFee(DEFAULT_SHIPPING_FEE);
+      setShippingError(null);
+      return;
+    }
+
+    setIsLoadingShipping(true);
+    setShippingError(null);
+
+    try {
+      const response = await apiService.getShippingCost(governorate);
+      if (response.data && response.data.shipping_cost !== undefined) {
+        setShippingFee(response.data.shipping_cost);
+        console.log(`Shipping cost for ${governorate}: ${response.data.shipping_cost} LE`);
+        
+        // Check if governorate is not found or inactive
+        if (!response.data.governorate_found) {
+          setShippingError(`Shipping not available to ${governorate}`);
+        }
+      } else {
+        setShippingFee(DEFAULT_SHIPPING_FEE);
+        setShippingError('Failed to get shipping cost');
+      }
+    } catch (error) {
+      console.error('Error fetching shipping cost:', error);
+      setShippingError('Failed to get shipping cost');
+      setShippingFee(DEFAULT_SHIPPING_FEE); // Fallback to default
+    } finally {
+      setIsLoadingShipping(false);
+    }
+  };
 
   // Handle navigation to sections on home page
   const handleSectionNavigation = (sectionId) => {
@@ -92,6 +131,11 @@ const Checkout = () => {
       ...prev,
       [name]: value,
     }));
+
+    // NEW: Fetch shipping cost when government changes
+    if (name === "government" && value) {
+      fetchShippingCost(value);
+    }
 
     // Clear error when user starts typing
     setErrors((prev) => ({
@@ -185,7 +229,7 @@ const Checkout = () => {
           };
         }),
         // Additional fields for tracking (not used by Django backend)
-        shipping_fee: SHIPPING_FEE,
+        shipping_fee: shippingFee,
         total_amount: total,
         state: formData.government,
         apartment: formData.apartment,
@@ -406,8 +450,29 @@ const Checkout = () => {
                 </div>
                 <div className="order-summary-totals">
                   <span>Shipping</span>
-                  <span>{SHIPPING_FEE.toFixed(2)} LE</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    {isLoadingShipping ? (
+                      <>
+                        <span style={{ fontSize: '12px', color: '#666' }}>Calculating...</span>
+                        <span style={{ fontSize: '10px' }}>⏳</span>
+                      </>
+                    ) : (
+                      <>
+                        {shippingFee.toFixed(2)} LE
+                        {formData.government && (
+                          <span style={{ fontSize: '11px', color: '#666', marginLeft: '5px' }}>
+                            ({formData.government})
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </span>
                 </div>
+                {shippingError && (
+                  <div style={{ fontSize: '12px', color: '#ff6b6b', marginTop: '5px' }}>
+                    {shippingError} - Using default rate
+                  </div>
+                )}
                 <div className="order-summary-totals order-summary-total">
                   <span>Total</span>
                   <span>{total.toFixed(2)} LE</span>
@@ -537,8 +602,29 @@ const Checkout = () => {
               </div>
               <div className="order-summary-totals">
                 <span>Shipping</span>
-                <span>{SHIPPING_FEE.toFixed(2)} LE</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  {isLoadingShipping ? (
+                    <>
+                      <span style={{ fontSize: '12px', color: '#666' }}>Calculating...</span>
+                      <span style={{ fontSize: '10px' }}>⏳</span>
+                    </>
+                  ) : (
+                    <>
+                      {shippingFee.toFixed(2)} LE
+                      {formData.government && (
+                        <span style={{ fontSize: '11px', color: '#666', marginLeft: '5px' }}>
+                          ({formData.government})
+                        </span>
+                      )}
+                    </>
+                  )}
+                </span>
               </div>
+              {shippingError && (
+                <div style={{ fontSize: '12px', color: '#ff6b6b', marginTop: '5px' }}>
+                  {shippingError} - Using default rate
+                </div>
+              )}
               <div className="order-summary-totals order-summary-total">
                 <span>Total</span>
                 <span>{total.toFixed(2)} LE</span>

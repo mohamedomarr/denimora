@@ -223,6 +223,13 @@ const apiService = {
   getOrders: () => API.get('/orders/'),
   getOrderDetail: (id) => API.get(`/orders/${id}/`),
   createOrder: (orderData) => API.post('/orders/create/', orderData),
+  
+  // Shipping costs - NEW
+  getShippingCost: (governorate) => {
+    const params = { governorate };
+    return API.get('/orders/shipping-cost/', { params });
+  },
+  getGovernoratesShipping: () => API.get('/orders/governorates/'),
 };
 
 export default apiService; 

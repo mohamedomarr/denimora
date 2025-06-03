@@ -1,6 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
+from django.http import HttpResponse
+from django.template.loader import get_template
 from .models import OrderItem, Order
 from .forms import OrderCreateForm
 from cart.cart import Cart
@@ -53,3 +56,14 @@ def order_history(request):
 def order_detail(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
     return render(request, 'orders/order_detail.html', {'order': order})
+
+@staff_member_required
+def print_order_receipt(request, order_id):
+    """View to print order receipt - accessible only to staff"""
+    order = get_object_or_404(Order, id=order_id)
+    template = get_template('admin/orders/order_receipt.html')
+    html = template.render({'order': order})
+    
+    response = HttpResponse(html, content_type='text/html')
+    response['Content-Disposition'] = f'inline; filename="order_{order.id}_receipt.html"'
+    return response

@@ -2,8 +2,63 @@ from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from orders.models import Order
+from orders.models import Order, GovernorateShipping
 from .serializers import OrderSerializer, OrderCreateSerializer
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import User
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_shipping_cost(request):
+    """
+    Get shipping cost for a specific governorate
+    """
+    governorate = request.query_params.get('governorate', '')
+    
+    if not governorate:
+        return Response({
+            'error': 'Governorate parameter is required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Get shipping cost using the model's method
+    shipping_cost = GovernorateShipping.get_shipping_cost(governorate)
+    
+    # Check if governorate exists and is active
+    try:
+        gov_obj = GovernorateShipping.objects.get(name__iexact=governorate, is_active=True)
+        governorate_found = True
+        is_custom_rate = True
+    except GovernorateShipping.DoesNotExist:
+        governorate_found = False
+        is_custom_rate = False
+    
+    return Response({
+        'governorate': governorate,
+        'shipping_cost': float(shipping_cost),
+        'governorate_found': governorate_found,
+        'is_custom_rate': is_custom_rate,
+        'currency': 'LE'
+    })
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def list_governorates_shipping(request):
+    """
+    List all available governorates with their shipping costs
+    """
+    governorates = GovernorateShipping.objects.filter(is_active=True).order_by('name')
+    
+    data = [{
+        'name': gov.name,
+        'shipping_cost': float(gov.shipping_cost),
+        'is_active': gov.is_active
+    } for gov in governorates]
+    
+    return Response({
+        'governorates': data,
+        'default_shipping_cost': 100,
+        'currency': 'LE'
+    })
 
 class OrderListView(generics.ListAPIView):
     """
@@ -13,7 +68,7 @@ class OrderListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user)
+        return Order.objects.filter(user=self.request.user).order_by('-created')
 
 class OrderDetailView(generics.RetrieveAPIView):
     """
@@ -22,81 +77,40 @@ class OrderDetailView(generics.RetrieveAPIView):
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return Order.objects.filter(user=self.request.user)
+    def get_object(self):
+        order_id = self.kwargs.get('order_id')
+        return get_object_or_404(Order, id=order_id, user=self.request.user)
 
-class OrderCreateView(generics.CreateAPIView):
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def create_order(request):
     """
     Create a new order
     """
-    serializer_class = OrderCreateSerializer
-    permission_classes = [AllowAny]
-
-    def create(self, request, *args, **kwargs):
-        print(f"Received order creation request: {request.data}")
-
-        # Check if there are items in the request data
-        has_items_in_request = 'items' in request.data and len(request.data['items']) > 0
-
-        # Check if there are items in the session cart
-        from cart.cart import Cart
-        cart = Cart(request)
-        has_items_in_session = len(cart) > 0
-
-        # If no items in request or session, return error
-        if not has_items_in_request and not has_items_in_session:
-            return Response(
-                {"error": "Cannot create order with empty cart. Please add items to your cart."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        serializer = self.get_serializer(data=request.data, context={'request': request})
-
-        if not serializer.is_valid():
-            print(f"Serializer validation errors: {serializer.errors}")
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    serializer = OrderCreateSerializer(data=request.data, context={'request': request})
+    
+    if serializer.is_valid():
         try:
-            # Import the custom exception
-            from orders.exceptions import InsufficientStockError
-
-            try:
-                order = serializer.save()
-                print(f"Order created successfully: {order.id}")
-                return Response(
-                    OrderSerializer(order).data,
-                    status=status.HTTP_201_CREATED
-                )
-            except InsufficientStockError as stock_error:
-                # Handle insufficient stock error specifically
-                print(f"Insufficient stock error: {str(stock_error)}")
-                error_message = str(stock_error)
-
-                # Create a more user-friendly message
-                if stock_error.size_name:
-                    user_message = f"Sorry, we don't have enough '{stock_error.product_name}' in size '{stock_error.size_name}' in stock. " \
-                                  f"You requested {stock_error.requested_quantity}, but we only have {stock_error.available_quantity} available."
-                else:
-                    user_message = f"Sorry, we don't have enough '{stock_error.product_name}' in stock. " \
-                                  f"You requested {stock_error.requested_quantity}, but we only have {stock_error.available_quantity} available."
-
-                return Response(
-                    {
-                        "error": "Insufficient stock",
-                        "message": user_message,
-                        "details": {
-                            "product_name": stock_error.product_name,
-                            "size_name": stock_error.size_name,
-                            "requested_quantity": stock_error.requested_quantity,
-                            "available_quantity": stock_error.available_quantity
-                        }
-                    },
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
+            order = serializer.save()
+            # Return the created order with full details including shipping cost
+            response_serializer = OrderSerializer(order)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
         except Exception as e:
+            # Handle any exceptions that might occur during order creation
+            import traceback
             print(f"Error creating order: {str(e)}")
-            return Response(
-                {"error": f"Failed to create order: {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            print(traceback.format_exc())
+            
+            # Check if it's a stock-related error
+            if 'InsufficientStockError' in str(type(e)):
+                return Response({
+                    'error': 'Insufficient stock',
+                    'message': str(e)
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            return Response({
+                'error': 'Failed to create order',
+                'message': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

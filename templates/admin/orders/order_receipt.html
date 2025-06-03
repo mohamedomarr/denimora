@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Order Receipt #{{ order.id }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+        
+        @media print {
+            body { margin: 0; }
+            .no-print { display: none; }
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+        }
+        
+        .receipt-header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .receipt-header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #2c3e50;
+        }
+        
+        .receipt-header p {
+            margin: 5px 0;
+            color: #666;
+        }
+        
+        .order-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .order-info div {
+            flex: 1;
+        }
+        
+        .order-info h3 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .items-table th,
+        .items-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        .items-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        
+        .items-table td.number {
+            text-align: right;
+        }
+        
+        .totals {
+            margin-left: auto;
+            width: 300px;
+        }
+        
+        .totals-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .totals-table td {
+            padding: 5px 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .totals-table .total-row {
+            font-weight: bold;
+            font-size: 14px;
+            border-top: 2px solid #333;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #666;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt-header">
+        <h1>DENIMORA</h1>
+        <p>Order Receipt</p>
+        <p>{{ order.created|date:"F d, Y - H:i" }}</p>
+    </div>
+    
+    <div class="order-info">
+        <div>
+            <h3>Order Information</h3>
+            <p><strong>Order ID:</strong> #{{ order.id }}</p>
+            <p><strong>Status:</strong> {{ order.get_status_display }}</p>
+            <p><strong>Payment Status:</strong> {% if order.paid %}Paid{% else %}Pending{% endif %}</p>
+            <p><strong>Order Date:</strong> {{ order.created|date:"F d, Y" }}</p>
+        </div>
+        
+        <div>
+            <h3>Customer Information</h3>
+            <p><strong>Name:</strong> {{ order.first_name }} {{ order.last_name }}</p>
+            <p><strong>Email:</strong> {{ order.email }}</p>
+            <p><strong>Phone:</strong> {{ order.phone }}</p>
+        </div>
+        
+        <div>
+            <h3>Shipping Address</h3>
+            <p>{{ order.first_name }} {{ order.last_name }}</p>
+            <p>{{ order.address }}</p>
+            <p>{{ order.city }}, {{ order.postal_code }}</p>
+        </div>
+    </div>
+    
+    <h3>Order Items</h3>
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Size</th>
+                <th class="number">Price</th>
+                <th class="number">Quantity</th>
+                <th class="number">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items.all %}
+            <tr>
+                <td>
+                    {% if item.product %}
+                        {{ item.product.name }}
+                    {% else %}
+                        Custom Item
+                    {% endif %}
+                </td>
+                <td>{{ item.size_name|default:"-" }}</td>
+                <td class="number">{{ item.price }} LE</td>
+                <td class="number">{{ item.quantity }}</td>
+                <td class="number">{{ item.get_cost }} LE</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="totals">
+        <table class="totals-table">
+            <tr>
+                <td>Subtotal:</td>
+                <td class="number">{{ order.get_total_cost }} LE</td>
+            </tr>
+            <tr>
+                <td>Shipping:</td>
+                <td class="number">{{ order.get_shipping_cost }} LE</td>
+            </tr>
+            <tr class="total-row">
+                <td>Total:</td>
+                <td class="number">{{ order.get_total_cost_with_shipping }} LE</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="footer">
+        <p>Thank you for your business!</p>
+        <p>DENIMORA - Premium Denim Collection</p>
+    </div>
+    
+    <div class="no-print" style="margin-top: 30px; text-align: center;">
+        <button onclick="window.print()">Print Receipt</button>
+        <button onclick="window.close()">Close</button>
+    </div>
+</body>
+</html> 

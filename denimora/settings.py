@@ -118,7 +118,10 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Cairo'
+DATETIME_FORMAT = 'Y-m-d H:i'
+DATE_FORMAT = 'Y/m/d'
+TIME_FORMAT = 'H:i'
 
 USE_I18N = True
 

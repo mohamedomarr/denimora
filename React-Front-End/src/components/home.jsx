@@ -181,10 +181,10 @@ const Home = () => {
       if (response.data && Array.isArray(response.data)) {
         setBestProducts(response.data); // Show all featured products
       } else {
-        setBestError("Failed to load products.");
+        setBestError("Failed to load best products.");
       }
     } catch (err) {
-      setBestError("Failed to load products.");
+      setBestError("Failed to load best products.");
     } finally {
       setIsLoadingBest(false);
     }
@@ -487,7 +487,7 @@ const Home = () => {
       </section>
 
       {/* Shop Section */}
-      <section className="shop-section">
+      <section className="shop-section" style={{ display: bestProducts.length === 0 ? "none" : undefined }}>
         <div className="section-title">
           <h2>Our Best</h2>
         </div>
@@ -497,7 +497,7 @@ const Home = () => {
           ) : bestError ? (
             <p className="error-banner">{bestError}</p>
           ) : bestProducts.length === 0 ? (
-            <p className="no-products">No products available.</p>
+            <p className="no-products">No featured products available</p>
           ) : (
             bestProducts.map((product) => (
               <div

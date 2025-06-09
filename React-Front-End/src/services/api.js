@@ -205,9 +205,8 @@ const apiService = {
   updateUserProfile: (data) => API.put('/users/profile/update/', data),
   
   // Products
-  getProducts: (category = null) => {
-    const params = category ? { category } : {};
-    return API.get('/products/', { params });
+  getProducts: (params = {}) => {
+    return API.get('/products/', { params }); // Use API.get, not axios.get
   },
   getProductDetail: (id, slug) => API.get(`/products/${id}/${slug}/`),
   getCategories: () => API.get('/products/categories/'),
@@ -237,4 +236,4 @@ const apiService = {
   unsubscribeEmail: (email) => API.post('/communications/unsubscribe/', { email }),
 };
 
-export default apiService; 
+export default apiService;

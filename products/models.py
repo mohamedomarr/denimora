@@ -1,6 +1,8 @@
 from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
+from rest_framework import viewsets
+
 
 class Category(models.Model):
     name = models.CharField(max_length=200)
@@ -49,6 +51,7 @@ class Product(models.Model):
     available = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+    is_featured = models.BooleanField(default=False)  
     
     class Meta:
         ordering = ('name',)
@@ -87,3 +90,5 @@ class ProductSize(models.Model):
     
     def __str__(self):
         return f"{self.product.name} - {self.size.name} ({self.stock} in stock)"
+
+

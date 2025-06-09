@@ -46,8 +46,7 @@ const Checkout = () => {
     useCartMenu();
   // We use these functions in the cart display
   const { removeFromCart, updateQuantity } = useCart();
-  const { isMenuOpen, menuRef, menuBtnRef, openMobileMenu, closeMobileMenu } =
-    useMobileMenu();
+  const { isMenuOpen, menuRef, menuBtnRef, openMobileMenu, closeMobileMenu } = useMobileMenu();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -66,7 +65,6 @@ const Checkout = () => {
     email: "",
     phone: "",
   });
-
   // NEW: Dynamic shipping state
   const [shippingFee, setShippingFee] = useState(DEFAULT_SHIPPING_FEE);
   const [isLoadingShipping, setIsLoadingShipping] = useState(false);
@@ -94,7 +92,7 @@ const Checkout = () => {
         
         // Check if governorate is not found or inactive
         if (!response.data.governorate_found) {
-          setShippingError(`Shipping not available to ${governorate}`);
+          setShippingError(`Shipping is currently not defined for ${governorate}`);
         }
       } else {
         setShippingFee(DEFAULT_SHIPPING_FEE);
@@ -334,6 +332,8 @@ const Checkout = () => {
     } finally {
       setIsSubmitting(false);
     }
+
+
   };
 
   //Cart Checkout Button
@@ -402,6 +402,7 @@ const Checkout = () => {
 
       {/* checkout container */}
       <div className="checkout-main-wrapper">
+
         {/* Order Summary Collapsible */}
         <div className="order-summary-collapsible">
           <button
@@ -622,7 +623,7 @@ const Checkout = () => {
               </div>
               {shippingError && (
                 <div style={{ fontSize: '12px', color: '#ff6b6b', marginTop: '5px' }}>
-                  {shippingError} - Using default rate
+                  {shippingError} - Using (100 LE) as a default Shipping Cost
                 </div>
               )}
               <div className="order-summary-totals order-summary-total">
@@ -847,6 +848,7 @@ const Checkout = () => {
           </div>
         </div>
       </div>
+
     </>
   );
 };

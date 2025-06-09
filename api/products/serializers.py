@@ -26,7 +26,8 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['id', 'category', 'name', 'slug', 'image', 'description', 
-                 'price', 'stock', 'available', 'image_url', 'sizes', 'available_sizes']
+                 'price', 'stock', 'available', 'image_url', 'sizes', 'available_sizes',
+                 'created', 'updated', 'is_featured']
     
     def get_available_sizes(self, obj):
         """Returns sizes that have stock available"""

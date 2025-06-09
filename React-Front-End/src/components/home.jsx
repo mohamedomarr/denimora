@@ -5,7 +5,6 @@ import { useMobileMenu } from "../hooks/useMobileMenu";
 import { useCartMenu } from "../hooks/useCartMenu";
 import { useCart } from "../contexts/CartContext";
 import apiService from "../services/api";
-
 import "../CSS/bootstrap.css";
 import "../CSS/Styles.css";
 
@@ -46,6 +45,117 @@ const Home = () => {
   });
   const [isSubscribing, setIsSubscribing] = useState(false);
   const [subscriptionSuccess, setSubscriptionSuccess] = useState(false);
+  //our best section
+  const [bestProducts, setBestProducts] = useState([]);
+  const [isLoadingBest, setIsLoadingBest] = useState(true);
+  const [bestError, setBestError] = useState(null);
+  // Popup state for add-to-cart modal
+  const [showAddCartPopup, setShowAddCartPopup] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedSize, setSelectedSize] = useState('');
+  const [availableSizes, setAvailableSizes] = useState([]);
+  const [isLoadingSizes, setIsLoadingSizes] = useState(false);
+
+
+  // Open popup when cart icon in image wrapper is clicked
+  const handleCartIconClick = async (e, product) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedProduct(product);
+    setShowAddCartPopup(true);
+    setSelectedSize('');
+    setIsLoadingSizes(true);
+
+    try {
+      // Fetch product details including available sizes
+      const response = await apiService.getProductDetail(product.id, product.slug);
+      if (response.data && response.data.available_sizes) {
+        setAvailableSizes(response.data.available_sizes);
+      } else {
+        setAvailableSizes([]);
+      }
+    } catch (error) {
+      console.error('Error fetching product details:', error);
+      setAvailableSizes([]);
+    } finally {
+      setIsLoadingSizes(false);
+    }
+  };
+
+  // Add to cart from popup
+  const handleAddToCartFromPopup = async () => {
+    if (selectedProduct && selectedSize) {
+      try {
+        // Find size_id from available sizes
+        let sizeId = null;
+        if (availableSizes.length > 0) {
+          const sizeObject = availableSizes.find(s => s.size && s.size.name === selectedSize);
+          if (sizeObject) {
+            sizeId = sizeObject.size.id;
+          }
+        }
+
+        if (!sizeId) {
+          console.error('Size ID not found for selected size:', selectedSize);
+          return;
+        }
+
+        // Create cart item with appropriate structure
+        const item = {
+          product_id: selectedProduct.id,
+          name: selectedProduct.name,
+          price: parseFloat(selectedProduct.price),
+          image: selectedProduct.image_url || selectedProduct.image,
+          image_url: selectedProduct.image_url || selectedProduct.image,
+          size: selectedSize,
+          size_id: sizeId,
+          quantity: 1,
+          totalPrice: parseFloat(selectedProduct.price) * 1
+        };
+
+        // Add to cart through API
+        await apiService.addToCart(
+          selectedProduct.id,
+          1,
+          false
+        );
+
+        // Update local cart state
+        addToCart(item);
+
+        // Show visual feedback
+        const addToCartButton = document.querySelector('.popup-content .btn');
+        if (addToCartButton) {
+          const originalText = addToCartButton.textContent;
+          addToCartButton.textContent = "Added!";
+          addToCartButton.style.backgroundColor = "#4CAF50";
+
+          setTimeout(() => {
+            addToCartButton.textContent = originalText;
+            addToCartButton.style.backgroundColor = "";
+          }, 1500);
+        }
+
+        setShowAddCartPopup(false);
+        setSelectedSize('');
+        openCartMenu();
+      } catch (error) {
+        console.error('Error adding to cart:', error);
+        // Show error message to user
+        alert('Failed to add item to cart. Please try again.');
+      }
+    }
+  };
+
+  // Close Add to cart popup
+  const handleCloseAddCartPopup = () => {
+    setShowAddCartPopup(false);
+    setSelectedProduct(null);
+    setSelectedSize('');
+  };
+
+
+
 
   // Handle scrolling when navigating from other pages
   useEffect(() => {
@@ -59,6 +169,28 @@ const Home = () => {
       }, 100);
     }
   }, [location]);
+
+  // Fetch best products from API
+  useEffect(() => {
+  const fetchBestProducts = async () => {
+    setIsLoadingBest(true);
+    setBestError(null);
+    try {
+      // Pass query param to get only featured products
+      const response = await apiService.getProducts({ is_featured: true });
+      if (response.data && Array.isArray(response.data)) {
+        setBestProducts(response.data); // Show all featured products
+      } else {
+        setBestError("Failed to load products.");
+      }
+    } catch (err) {
+      setBestError("Failed to load products.");
+    } finally {
+      setIsLoadingBest(false);
+    }
+  };
+  fetchBestProducts();
+}, []);
 
   // Handle smooth scrolling to sections
   const scrollToSection = (sectionId) => {
@@ -359,46 +491,38 @@ const Home = () => {
         <div className="section-title">
           <h2>Our Best</h2>
         </div>
-
         <div className="products-container">
-          {[
-            { name: "Baggi Fit", price: 350, image: "/Assets/Shop/Shop1.jpg" },
-            { name: "Wide Leg", price: 300, image: "/Assets/Shop/Shop2.jpg" },
-            {
-              name: "Straight Leg",
-              price: 450,
-              image: "/Assets/Shop/Shop3.jpg",
-            },
-            {
-              name: "Baggi Fit Light",
-              price: 250,
-              image: "/Assets/Shop/Shop6.jpg",
-            },
-          ].map((product, index) => (
-            <div
-              key={index}
-              className="product-card"
-              data-item={JSON.stringify(product)}
-              onClick={(e) => {
-                if (!e.target.closest(".cart-icon")) {
-                  window.location.href = `/shop-item?${new URLSearchParams(
-                    product
-                  ).toString()}`;
-                }
-              }}
-            >
-              <div className="product-img-wrapper">
-                <img src={product.image} alt={product.name} />
-                <a href="" className="cart-icon">
-                  <i className="fas fa-bag-shopping"></i>
-                </a>
+          {isLoadingBest ? (
+            <p>Loading...</p>
+          ) : bestError ? (
+            <p className="error-banner">{bestError}</p>
+          ) : bestProducts.length === 0 ? (
+            <p className="no-products">No products available.</p>
+          ) : (
+            bestProducts.map((product) => (
+              <div
+                key={product.id}
+                className="product-card"
+                data-item={JSON.stringify(product)}
+                onClick={(e) => {
+                  if (!e.target.closest(".cart-icon")) {
+                    window.location.href = `/shop-item?id=${product.id}&slug=${product.slug}`;
+                  }
+                }}
+              >
+                <div className="product-img-wrapper">
+                  <img src={product.image_url || product.image} alt={product.name} />
+                  <a href="#" className="cart-icon" onClick={(e) => handleCartIconClick(e, product)}>
+                    <i className="fas fa-bag-shopping"></i>
+                  </a>
+                </div>
+                <div className="cart-text">
+                  <h3>{product.name}</h3>
+                  <p>LE {Number(product.price).toFixed(2)}</p>
+                </div>
               </div>
-              <div className="cart-text">
-                <h3>{product.name}</h3>
-                <p>LE {product.price.toFixed(2)}</p>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </section>
 
@@ -663,6 +787,53 @@ const Home = () => {
                 </button>
               </form>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add to Cart Popup */}
+      {showAddCartPopup && selectedProduct && (
+        <div className="popup-overlay" onClick={handleCloseAddCartPopup}>
+          <div className="popup-content" onClick={e => e.stopPropagation()}>
+            <span className="close-btn" onClick={handleCloseAddCartPopup}>&times;</span>
+
+            <img src={selectedProduct.image_url || selectedProduct.image} alt={selectedProduct.name} className="popup-product-img" />
+
+            <h3>{selectedProduct.name}</h3>
+            <p>Price: LE {Number(selectedProduct.price).toFixed(2)}</p>
+
+            <div className="size-btns">
+              {isLoadingSizes ? (
+                <div className="loading-sizes">Loading sizes...</div>
+              ) : selectedProduct.sizes && selectedProduct.sizes.length > 0 && availableSizes.length > 0 ? (
+                selectedProduct.sizes.map(sizeObj => {
+                  const isAvailable = availableSizes.some(
+                    availableSize => availableSize.size.id === sizeObj.id
+                  );
+                  return (
+                    <button
+                      key={sizeObj.id}
+                      className={`size-btn${selectedSize === sizeObj.name ? ' active' : ''} ${!isAvailable ? 'disabled' : ''}`}
+                      onClick={() => isAvailable && setSelectedSize(sizeObj.name)}
+                      disabled={!isAvailable}
+                      type="button"
+                    >
+                      {sizeObj.name}
+                    </button>
+                  );
+                })
+              ) : (
+                <div className="no-sizes">Out Of Stock</div>
+              )}
+            </div>
+
+            <button
+              className="btn"
+              onClick={handleAddToCartFromPopup}
+              disabled={!selectedSize || isLoadingSizes || availableSizes.length === 0}
+            >
+              Add to Cart
+            </button>
           </div>
         </div>
       )}

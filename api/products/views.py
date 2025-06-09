@@ -9,19 +9,23 @@ from .serializers import ProductSerializer, CategorySerializer
 @permission_classes([AllowAny])
 def product_list(request):
     """
-    List all available products or filter by category
+    List all available products or filter by category or is_featured
     """
     category_slug = request.query_params.get('category', None)
-    
+    is_featured = request.query_params.get('is_featured', None)
+
+    products = Product.objects.filter(available=True)
+
     if category_slug:
         try:
             category = Category.objects.get(slug=category_slug)
-            products = Product.objects.filter(available=True, category=category)
+            products = products.filter(category=category)
         except Category.DoesNotExist:
             return Response({"error": "Category not found"}, status=status.HTTP_404_NOT_FOUND)
-    else:
-        products = Product.objects.filter(available=True)
-        
+
+    if is_featured is not None:
+        products = products.filter(is_featured=is_featured.lower() == 'true')
+
     serializer = ProductSerializer(products, many=True)
     return Response(serializer.data)
 
@@ -46,4 +50,4 @@ def category_list(request):
     """
     categories = Category.objects.all()
     serializer = CategorySerializer(categories, many=True)
-    return Response(serializer.data) 
+    return Response(serializer.data)

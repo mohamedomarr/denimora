@@ -233,4 +233,14 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             else:
                 print("No items to process")
 
+            
+            # Send confirmation email after all items are created
+            try:
+                from orders.utils import send_order_confirmation_email
+                send_order_confirmation_email(order)
+            except Exception as e:
+                print(f"Error sending confirmation email: {e}")
+                import traceback
+                print(traceback.format_exc())
+
         return order

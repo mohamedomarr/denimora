@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header img {
+            max-width: 200px;
+        }
+        .order-info {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .items-table th, .items-table td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        .totals {
+            margin-top: 20px;
+            text-align: right;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="{}" alt="DENIMORA Logo">
+        <h1>Order Confirmation</h1>
+    </div>
+
+    <p>Dear {{ order.first_name }} {{ order.last_name }},</p>
+
+    <p>Thank you for your order! We're pleased to confirm that we've received your order #{{ order.id }}.</p>
+
+    <div class="order-info">
+        <h3>Order Details</h3>
+        <p><strong>Order Number:</strong> #{{ order.id }}</p>
+        <p><strong>Order Date:</strong> {{ order.created|date:"F d, Y" }}</p>
+        <p><strong>Status:</strong> {{ order.get_status_display }}</p>
+    </div>
+
+    <h3>Shipping Information</h3>
+    <p>
+        {{ order.first_name }} {{ order.last_name }}<br>
+        {{ order.address }}<br>
+        {{ order.city }}, {{ order.postal_code }}<br>
+        {{ order.governorate }}
+    </p>
+
+    <h3>Order Items</h3>
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Size</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items.all %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.size_name|default:"-" }}</td>
+                <td>{{ item.price }} LE</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.get_cost }} LE</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <p><strong>Subtotal:</strong> {{ order.get_total_cost }} LE</p>
+        <p><strong>Shipping:</strong> {{ order.get_shipping_cost }} LE</p>
+        <p><strong>Total:</strong> {{ order.get_total_cost_with_shipping }} LE</p>
+    </div>
+
+    <p>We'll notify you when your order ships.</p>
+
+    <div class="footer">
+        <p>Thank you for shopping with DENIMORA!</p>
+        <p>If you have any questions, please contact us through our website.</p>
+    </div>
+</body>
+</html> 

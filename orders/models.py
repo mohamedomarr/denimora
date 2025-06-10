@@ -95,6 +95,35 @@ class Order(models.Model):
     def get_total_cost_with_shipping(self):
         """Return total cost including shipping"""
         return self.get_total_cost() + self.get_shipping_cost()
+    
+    def save(self, *args, **kwargs):
+        """
+        Override save method to send emails on order status updates only.
+        Confirmation email should be sent after all OrderItems are created (in the order creation logic, not here).
+        """
+        is_new = self.pk is None
+        if not is_new:
+            old_instance = Order.objects.get(pk=self.pk)
+            status_changed = old_instance.status != self.status
+        else:
+            status_changed = False
+
+        # Save the order
+        super().save(*args, **kwargs)
+
+        # Send status update email only (not confirmation email)
+        try:
+            from .utils import send_order_status_update_email
+            # Send status update email when status changes
+            if not is_new and status_changed:
+                print(f"Attempting to send status update email to {self.email} for order #{self.id}")
+                send_order_status_update_email(self)
+                print("Status update email sent successfully")
+        except Exception as e:
+            # Log the error but don't prevent the order from being saved
+            print(f"Error sending order email: {str(e)}")
+            import traceback
+            print(traceback.format_exc())
 
 
 class OrderItem(models.Model):

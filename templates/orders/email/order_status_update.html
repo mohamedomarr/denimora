@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header img {
+            max-width: 200px;
+        }
+        .status-update {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .order-details {
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="{}" alt="DENIMORA Logo">
+        <h1>Order Status Update</h1>
+    </div>
+
+    <p>Dear {{ order.first_name }} {{ order.last_name }},</p>
+
+    <div class="status-update">
+        <h3>Your Order Status Has Been Updated</h3>
+        <p>Order #{{ order.id }} is now <strong>{{ order.get_status_display }}</strong></p>
+    </div>
+
+    <div class="order-details">
+        <h3>Order Details</h3>
+        <p><strong>Order Number:</strong> #{{ order.id }}</p>
+        <p><strong>Order Date:</strong> {{ order.created|date:"F d, Y" }}</p>
+        <p><strong>Total Amount:</strong> {{ order.get_total_cost_with_shipping }} LE</p>
+    </div>
+
+    {% if order.status == 'shipped' %}
+    <p>Your order has been shipped!</p>
+    {% elif order.status == 'delivered' %}
+    <p>Your order has been delivered! </p>
+    {% elif order.status == 'cancelled' %}
+    <p>Your order has been cancelled. If you did not request this cancellation, please contact us through our website immediately.</p>
+    {% else %}
+    <p>We're processing your order. You'll receive another update when your order status changes.</p>
+    {% endif %}
+
+    <div class="footer">
+        <p>Thank you for shopping with DENIMORA!</p>
+        <p>If you have any questions, please contact us through our website.</p>
+    </div>
+</body>
+</html> 

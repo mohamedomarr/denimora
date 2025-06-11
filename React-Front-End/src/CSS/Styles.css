@@ -131,6 +131,26 @@ header .shop-page-icons div:hover {
     transition: .2s ease-in-out;
 }
 
+
+.cart-icon-with-number {
+  position: relative;
+  display: inline-block;
+  font-size: 1.5rem; /* Adjust as needed */
+}
+
+.cart-icon-with-number .cart-number {
+  position: absolute;
+  top: 75%;
+  left: 51%;
+  transform: translate(-50%, -55%);
+  color: var(--text-color--);
+  font-size: 0.7rem;
+  font-weight: bold;
+  pointer-events: none;
+  /* Optional: add text-shadow for better visibility */
+  text-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+
 /*Home Styling*/
 .home-content {
     display: flex;

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const VISIT_COOLDOWN = 10; // Show popup again after 10 visits
+const VISIT_COOLDOWN = 15; // Show popup again after 10 visits
 
 export const usePopup = () => {
   const [showPopup, setShowPopup] = useState(false);

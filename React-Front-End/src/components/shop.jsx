@@ -303,7 +303,16 @@ const Shop = () => {
         </div>
 
         <div className="shop-page-icons">
-          <div className="fas fa-shopping-bag" id="cart-btn" ref={cartBtnRef} onClick={openCartMenu}></div>
+          <div
+            className="fas fa-shopping-bag  cart-icon-with-number"
+            id="cart-btn"
+            ref={cartBtnRef}
+            onClick={openCartMenu}
+          >
+            {cartItems.length > 0 && (
+            <span className="cart-number">{cartItems.length}</span>
+          )}
+          </div>
           <div className="fas fa-bars" id="menu-btn" ref={menuBtnRef} onClick={openMobileMenu}></div>
         </div>
       </header>

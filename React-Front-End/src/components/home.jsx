@@ -20,7 +20,7 @@ const Home = () => {
     removeFromCart,
     updateQuantity,
     getTotalPrice,
-  } = useCart();
+  }= useCart();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [contactForm, setContactForm] = useState({
@@ -242,6 +242,7 @@ const Home = () => {
         setSubscriptionForm({ email: "" });
         localStorage.setItem("denimora_subscribe_popup_never_show", "true");
         
+        
         // Reset success message after 5 seconds
         setTimeout(() => {
           setSubscriptionSuccess(false);
@@ -424,11 +425,15 @@ const Home = () => {
 
         <div className="icons">
           <div
-            className="fas fa-shopping-bag"
+            className="fas fa-shopping-bag  cart-icon-with-number"
             id="cart-btn"
             ref={cartBtnRef}
             onClick={openCartMenu}
-          ></div>
+          >
+            {cartItems.length > 0 && (
+            <span className="cart-number">{cartItems.length}</span>
+          )}
+          </div>
           <div
             className="fas fa-bars"
             id="menu-btn"

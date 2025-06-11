@@ -12,10 +12,8 @@ const Home = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { showPopup, activeTab, closePopup, showTab } = usePopup();
-  const { isMenuOpen, menuRef, menuBtnRef, openMobileMenu, closeMobileMenu } =
-    useMobileMenu();
-  const { isCartOpen, cartRef, cartBtnRef, openCartMenu, closeCartMenu } =
-    useCartMenu();
+  const { isMenuOpen, menuRef, menuBtnRef, openMobileMenu, closeMobileMenu } = useMobileMenu();
+  const { isCartOpen, cartRef, cartBtnRef, openCartMenu, closeCartMenu } = useCartMenu();
   const {
     cartItems,
     addToCart,
@@ -55,6 +53,8 @@ const Home = () => {
   const [selectedSize, setSelectedSize] = useState('');
   const [availableSizes, setAvailableSizes] = useState([]);
   const [isLoadingSizes, setIsLoadingSizes] = useState(false);
+
+  
 
 
   // Open popup when cart icon in image wrapper is clicked
@@ -154,9 +154,6 @@ const Home = () => {
     setSelectedSize('');
   };
 
-
-
-
   // Handle scrolling when navigating from other pages
   useEffect(() => {
     if (location.state?.scrollTo) {
@@ -190,7 +187,7 @@ const Home = () => {
     }
   };
   fetchBestProducts();
-}, []);
+  }, []);
 
   // Handle smooth scrolling to sections
   const scrollToSection = (sectionId) => {
@@ -243,7 +240,8 @@ const Home = () => {
       if (response.data.success) {
         setSubscriptionSuccess(true);
         setSubscriptionForm({ email: "" });
-
+        localStorage.setItem("denimora_subscribe_popup_never_show", "true");
+        
         // Reset success message after 5 seconds
         setTimeout(() => {
           setSubscriptionSuccess(false);
@@ -489,7 +487,7 @@ const Home = () => {
       {/* Shop Section */}
       <section className="shop-section" style={{ display: bestProducts.length === 0 ? "none" : undefined }}>
         <div className="section-title">
-          <h2>Our Best</h2>
+          <h2>Best Sellers</h2>
         </div>
         <div className="products-container">
           {isLoadingBest ? (

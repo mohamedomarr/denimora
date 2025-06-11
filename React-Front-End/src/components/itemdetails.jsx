@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useSizeChart } from '../hooks/useSizeChart';
-import { useCartMenu } from '../hooks/useCartMenu';
+import { useCartMenu } from "../hooks/useCartMenu";
 import { useMobileMenu } from '../hooks/useMobileMenu';
 import { useCart } from '../contexts/CartContext';
 import apiService from '../services/api';
 import '../CSS/bootstrap.css';
 import '../CSS/Styles.css';
 
-
+const MAX_VISIBLE_THUMBNAILS = 4;
 
 const ItemDetails = () => {
   const [searchParams] = useSearchParams();
@@ -25,7 +25,10 @@ const ItemDetails = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [availableSizes, setAvailableSizes] = useState([]);
-
+  // slider states
+  const [currentSlide, setCurrentSlide] = useState(0); 
+  const [thumbStart, setThumbStart] = useState(0);
+  const [dragStartX, setDragStartX] = useState(null);
   const productId = searchParams.get('id');
   const productSlug = searchParams.get('slug');
   // Keep these for backward (Fallback) compatibility
@@ -39,7 +42,7 @@ const ItemDetails = () => {
     closeMobileMenu(); // Close mobile menu after clicking
   };
 
-
+  // Effect to fetch product data from API or URL parameters
   useEffect(() => {
     const fetchProductData = async () => {
       setIsLoading(true);
@@ -57,7 +60,8 @@ const ItemDetails = () => {
               description: product.description,
               slug: product.slug,
               available_sizes: product.available_sizes || [],
-              sizes: product.sizes || []
+              sizes: product.sizes || [],
+              detail_images: product.detail_images || [] // <-- add this line
             });
             setBasePrice(parseFloat(product.price));
             document.title = `DENIMORA - ${product.name}`;
@@ -128,8 +132,6 @@ const ItemDetails = () => {
   };
 
   const handleAddToCart = async () => {
-    console.log("Add to Cart button clicked");
-
     if (!selectedSize) {
       alert('Please select a size');
       return;
@@ -138,29 +140,19 @@ const ItemDetails = () => {
     // Find size_id from available sizes if using API
     let sizeId = null;
     if (itemData.id && availableSizes.length > 0) {
-      // Try to find the size object
-      const sizeObject = availableSizes.find(s => {
-        // Handle different possible structures of size data
-        if (s.size && s.size.name === selectedSize) {
-          return true;
-        } else if (s.name === selectedSize) {
-          return true;
-        }
-        return false;
-      });
-
+      const sizeObject = availableSizes.find(s =>
+        (s.size && s.size.name === selectedSize) || (s.name === selectedSize)
+      );
       if (sizeObject) {
-        // Extract the ID based on the structure
         sizeId = sizeObject.size ? sizeObject.size.id : sizeObject.id;
       }
     }
 
-    // Create cart item with appropriate structure
     const item = {
-      product_id: itemData.id || null, // API format
+      product_id: itemData.id || null,
       name: itemData.name,
       price: itemData.price,
-      image: itemData.image, // Include both image formats for compatibility
+      image: itemData.image,
       image_url: itemData.image,
       size: selectedSize,
       size_id: sizeId,
@@ -168,27 +160,24 @@ const ItemDetails = () => {
       totalPrice: itemData.price * quantity
     };
 
-    console.log("Adding item to cart:", item);
+    // Await addToCart in case it's async
+    await addToCart(item);
 
-    // Use a non-async approach to avoid Promise handling issues
-    addToCart(item);
-    console.log("Cart updated, opening cart menu");
+    // Now open the cart menu
     openCartMenu();
 
-    // Show visual feedback that item was added
+    // Show visual feedback
     const addToCartButton = document.querySelector('.add-to-cart button');
     if (addToCartButton) {
       const originalText = addToCartButton.textContent;
       addToCartButton.textContent = "Added!";
-      addToCartButton.style.backgroundColor = "#28355B";
-      addToCartButton.style.color = "#B59F73";
-      
-
+      addToCartButton.style.backgroundColor = "#B59F73";
+      addToCartButton.style.color = "#28355B";
       setTimeout(() => {
         addToCartButton.textContent = originalText;
         addToCartButton.style.backgroundColor = "";
+        addToCartButton.style.color = "";
       }, 2000);
-
     }
   };
 
@@ -199,6 +188,54 @@ const ItemDetails = () => {
   };
 
   const totalPrice = basePrice * quantity;
+
+  // adjust the thumbnail window if needed
+  useEffect(() => {
+    if (!itemData?.detail_images) return;
+    if (currentSlide < thumbStart) {
+      setThumbStart(currentSlide);
+    } else if (currentSlide >= thumbStart + MAX_VISIBLE_THUMBNAILS) {
+      setThumbStart(currentSlide - MAX_VISIBLE_THUMBNAILS + 1);
+    }
+  }, [currentSlide, itemData]);
+
+  const handleThumbTouchStart = (e) => {
+    setDragStartX(e.touches[0].clientX);
+  };
+
+  const handleThumbTouchMove = (e) => {
+    if (dragStartX === null) return;
+    const deltaX = e.touches[0].clientX - dragStartX;
+    if (Math.abs(deltaX) > 30) {
+      if (deltaX < 0 && thumbStart + MAX_VISIBLE_THUMBNAILS < itemData.detail_images.length) {
+        setThumbStart(thumbStart + 1);
+      } else if (deltaX > 0 && thumbStart > 0) {
+        setThumbStart(thumbStart - 1);
+      }
+      setDragStartX(null);
+    }
+  };
+
+  const handleThumbMouseDown = (e) => {
+    setDragStartX(e.clientX);
+  };
+
+  const handleThumbMouseMove = (e) => {
+    if (dragStartX === null) return;
+    const deltaX = e.clientX - dragStartX;
+    if (Math.abs(deltaX) > 30) {
+      if (deltaX < 0 && thumbStart + MAX_VISIBLE_THUMBNAILS < itemData.detail_images.length) {
+        setThumbStart(thumbStart + 1);
+      } else if (deltaX > 0 && thumbStart > 0) {
+        setThumbStart(thumbStart - 1);
+      }
+      setDragStartX(null);
+    }
+  };
+
+  const handleThumbMouseUp = () => {
+    setDragStartX(null);
+  };
 
   if (isLoading) return <div className="loading">Loading product details...</div>;
   if (error && !itemData) return <div className="error">{error}</div>;
@@ -238,15 +275,54 @@ const ItemDetails = () => {
       {/* Shop Item Section */}
       <section className="shop-item-container">
         <div className="shop-item-img">
-          <img
-            src={itemData.image}
-            alt={itemData.name}
-            id="productImage"
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = '/Assets/Shop/placeholder.jpg'; // Fallback image
-            }}
-          />
+          {itemData.detail_images && itemData.detail_images.length > 0 ? (
+            <div className="slider-wrapper">
+              <img
+                src={itemData.detail_images[currentSlide].image}
+                alt={itemData.detail_images[currentSlide].alt_text || itemData.name}
+                className="slider-main-img"
+              />
+             
+              <div className="slider-thumbnails" style={{ overflow: "hidden", maxWidth: "100%" }}
+                onTouchStart={handleThumbTouchStart} 
+                onTouchMove={handleThumbTouchMove} 
+                onTouchEnd={() => setDragStartX(null)} 
+                onMouseDown={handleThumbMouseDown} 
+                onMouseMove={handleThumbMouseMove} 
+                onMouseUp={handleThumbMouseUp} 
+                onMouseLeave={handleThumbMouseUp}>
+                {itemData.detail_images
+                  .slice(thumbStart, thumbStart + MAX_VISIBLE_THUMBNAILS)
+                  .map((img, idx) => {
+                    const realIdx = thumbStart + idx;
+                    return (
+                      <img
+                        key={img.id}
+                        src={img.image}
+                        alt={img.alt_text || itemData.name}
+                        className={`slider-thumb ${currentSlide === realIdx ? 'active' : ''}`}
+                        style={{
+                          cursor: 'pointer',
+                          maxWidth: 50,
+                          margin: 2
+                        }}
+                        onClick={() => setCurrentSlide(realIdx)}
+                      />
+                    );
+                  })}
+              </div>
+            </div>
+          ) : (
+            <img
+              src={itemData.image}
+              alt={itemData.name}
+              id="productImage"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = '/Assets/Shop/placeholder.jpg';
+              }}
+            />
+          )}
         </div>
 
         <div className="shop-item-content">
@@ -364,6 +440,8 @@ const ItemDetails = () => {
             </div>
           </div>
         </div>
+
+        
       </section>
 
       {/* Footer Section */}

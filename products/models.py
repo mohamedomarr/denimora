@@ -92,3 +92,12 @@ class ProductSize(models.Model):
         return f"{self.product.name} - {self.size.name} ({self.stock} in stock)"
 
 
+class ProductImage(models.Model):
+    product = models.ForeignKey(Product, related_name='detail_images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='products/details/%Y/%m/%d')
+    alt_text = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return f"Image for {self.product.name}"
+
+

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product, Size, ProductSize
+from .models import Category, Product, Size, ProductSize, ProductImage 
 
 admin.site.site_header = "DENIMORA Admin Dashboard"
 admin.site.index_title = "Admin Settings"
@@ -19,6 +19,10 @@ class ProductSizeInline(admin.TabularInline):
     model = ProductSize
     extra = 1
 
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage
+    extra = 1
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ['name', 'slug', 'price', 'stock', 'available', 'created', 'updated']
@@ -29,7 +33,7 @@ class ProductAdmin(admin.ModelAdmin):
     raw_id_fields = ['category']
     date_hierarchy = 'created'
     ordering = ['name']
-    inlines = [ProductSizeInline]
+    inlines = [ProductSizeInline, ProductImageInline]
     filter_horizontal = ['sizes']
 
 @admin.register(ProductSize)

@@ -175,24 +175,33 @@ const ItemDetails = () => {
       totalPrice: itemData.price * quantity
     };
 
-    // Await addToCart in case it's async
-    await addToCart(item);
+    try {
+      // Await addToCart in case it's async
+      await addToCart(item);
 
-    // Now open the cart menu
-    openCartMenu();
+      // Now open the cart menu
+      openCartMenu();
 
-    // Show visual feedback
-    const addToCartButton = document.querySelector('.add-to-cart button');
-    if (addToCartButton) {
-      const originalText = addToCartButton.textContent;
-      addToCartButton.textContent = "Added!";
-      addToCartButton.style.backgroundColor = "#B59F73";
-      addToCartButton.style.color = "#28355B";
-      setTimeout(() => {
-        addToCartButton.textContent = originalText;
-        addToCartButton.style.backgroundColor = "";
-        addToCartButton.style.color = "";
-      }, 2000);
+      // Show visual feedback
+      const addToCartButton = document.querySelector('.add-to-cart button');
+      if (addToCartButton) {
+        const originalText = addToCartButton.textContent;
+        addToCartButton.textContent = "Added!";
+        addToCartButton.style.backgroundColor = "#B59F73";
+        addToCartButton.style.color = "#28355B";
+        setTimeout(() => {
+          addToCartButton.textContent = originalText;
+          addToCartButton.style.backgroundColor = "";
+          addToCartButton.style.color = "";
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      
+      // Show user-friendly error message
+      alert(error.message || 'Failed to add item to cart. Please try again.');
+      
+      
     }
   };
 

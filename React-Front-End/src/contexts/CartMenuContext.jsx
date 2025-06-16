@@ -15,13 +15,17 @@ export const CartMenuProvider = ({ children }) => {
     setIsCartOpen(false);
   };
 
+
+ 
+
   return (
     <CartMenuContext.Provider value={{
       isCartOpen,
       cartRef,
       cartBtnRef,
       openCartMenu,
-      closeCartMenu
+      closeCartMenu,
+      
     }}>
       {children}
     </CartMenuContext.Provider>

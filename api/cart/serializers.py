@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from products.models import Product, Size
+from cart.models import CartReservation
 
 class CartItemSerializer(serializers.Serializer):
     product_id = serializers.IntegerField()
@@ -38,4 +39,32 @@ class CartItemDetailSerializer(serializers.Serializer):
 
 class CartSerializer(serializers.Serializer):
     items = CartItemDetailSerializer(many=True, read_only=True)
-    total_price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True) 
+    total_price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+
+class ReservationSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(source='product.name', read_only=True)
+    size_name = serializers.CharField(source='size.name', read_only=True)
+    
+    class Meta:
+        model = CartReservation
+        fields = ['id', 'product_id', 'size_id', 'quantity', 'expires_at', 
+                 'product_name', 'size_name', 'is_active']
+
+class ReserveItemSerializer(serializers.Serializer):
+    product_id = serializers.IntegerField()
+    size_id = serializers.IntegerField(required=False, allow_null=True)
+    quantity = serializers.IntegerField(min_value=1, max_value=10)
+    session_id = serializers.CharField(max_length=255)
+
+    def validate_product_id(self, value):
+        try:
+            Product.objects.get(id=value, available=True)
+            return value
+        except Product.DoesNotExist:
+            raise serializers.ValidationError("Product not available")
+
+class StockValidationSerializer(serializers.Serializer):
+    items = serializers.ListField(
+        child=serializers.DictField(),
+        allow_empty=False
+    )

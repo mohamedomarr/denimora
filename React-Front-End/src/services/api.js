@@ -234,6 +234,34 @@ const apiService = {
   subscribeEmail: (email, source = 'popup') => API.post('/communications/subscribe/', { email, source }),
   submitContactMessage: (name, email, message) => API.post('/communications/contact/', { name, email, message }),
   unsubscribeEmail: (email) => API.post('/communications/unsubscribe/', { email }),
+  
+  // Reservation methods - NEW
+  reserveItem: (productId, sizeId, quantity, sessionId) => {
+    const data = {
+      product_id: productId,
+      quantity,
+      session_id: sessionId
+    };
+    if (sizeId) data.size_id = sizeId;
+    return API.post('/cart/reserve/', data);
+  },
+  releaseReservation: (reservationId) => 
+    API.delete(`/cart/release/${reservationId}/`),
+  validateCartStock: (cartItems) => 
+    API.post('/cart/validate-stock/', { items: cartItems }),
+  validateCheckout: (cartItems) => 
+    API.post('/cart/validate-checkout/', { items: cartItems }),
+  cleanupExpiredReservations: () => 
+    API.post('/cart/cleanup-expired/'),
+  // Utility to get/create session ID
+  getSessionId: () => {
+    let sessionId = localStorage.getItem('cart_session_id');
+    if (!sessionId) {
+      sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem('cart_session_id', sessionId);
+    }
+    return sessionId;
+  },
 };
 
 export default apiService;

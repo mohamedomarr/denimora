@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
-import { useSizeChart } from '../hooks/useSizeChart';
-import { useCartMenu } from "../hooks/useCartMenu";
-import { useMobileMenu } from '../hooks/useMobileMenu';
-import { useCart } from '../contexts/CartContext';
-import apiService from '../services/api';
-import '../CSS/bootstrap.css';
-import '../CSS/Styles.css';
+import { useSizeChart } from '../../hooks/useSizeChart';
+import { useCartMenu } from "../../contexts/CartMenuContext";
+import { useMobileMenu } from '../../contexts/MobileMenuContext';
+import { useCart } from '../../contexts/CartContext';
+import apiService from '../../services/api';
+import Header from "../Shared/header";
+import Footer from "../Shared/footer";
+import Cart from "../Shared/cart";
+import MobileMenu from "../Shared/mobilemenu";
+import '../../CSS/bootstrap.css';
+import '../../CSS/Styles.css';
 
 const MAX_VISIBLE_THUMBNAILS = 4;
 
@@ -14,8 +18,7 @@ const ItemDetails = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { isSizeChartOpen, sizeChartRef, sizeChartBtnRef, openSizeChart, closeSizeChart } = useSizeChart();
-  const { isCartOpen, cartRef, cartBtnRef, openCartMenu, closeCartMenu } = useCartMenu();
-  const { isMenuOpen, menuRef, menuBtnRef, openMobileMenu, closeMobileMenu } = useMobileMenu();
+  const { openCartMenu } = useCartMenu();
   const { cartItems, addToCart, removeFromCart, updateQuantity, getTotalPrice } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [basePrice, setBasePrice] = useState(0);
@@ -35,12 +38,6 @@ const ItemDetails = () => {
   const productName = searchParams.get('name');
   const productPrice = searchParams.get('price');
   const productImage = searchParams.get('image');
-
-  // Handle navigation to sections on home page
-  const handleSectionNavigation = (sectionId) => {
-    navigate('/', { state: { scrollTo: sectionId } });
-    closeMobileMenu(); // Close mobile menu after clicking
-  };
 
   // Effect to fetch product data from API or URL parameters
   useEffect(() => {
@@ -109,6 +106,24 @@ const ItemDetails = () => {
 
     fetchProductData();
   }, [productId, productSlug, productName, productPrice, productImage, navigate]);
+
+  // Fetch cart data
+  useEffect(() => {
+    const fetchCart = async () => {
+      try {
+        const cartResponse = await apiService.getCart();
+        if (cartResponse.data && cartResponse.data.items) {
+          // Update local cart state with server data
+          // You'll need to implement this in your CartContext
+          // updateCartFromServer(cartResponse.data.items);
+        }
+      } catch (error) {
+        console.error('Error fetching cart:', error);
+      }
+    };
+
+    fetchCart();
+  }, []);
 
   const decreaseQuantity = () => {
     if (quantity > 1) {
@@ -181,12 +196,6 @@ const ItemDetails = () => {
     }
   };
 
-  // Cart Checkout Button
-  const handleCheckoutBtn = () => {
-    closeCartMenu();
-    navigate('/checkout');
-  };
-
   const totalPrice = basePrice * quantity;
 
   // adjust the thumbnail window if needed
@@ -243,43 +252,7 @@ const ItemDetails = () => {
 
   return (
     <>
-      {/* Header */}
-      <header className="header" id="Shop-Header">
-        <div className="shop-page-navbar">
-          <nav className="nav">
-            <Link className="nav-link" to="/">Home</Link>
-            <Link className="nav-link" to="/shop">Shop</Link>
-            <a className="nav-link" href="#" onClick={(e) => {
-              e.preventDefault();
-              handleSectionNavigation('About-Us');
-            }}>About Us
-            </a>
-            <a className="nav-link" href="#" onClick={(e) => {
-              e.preventDefault();
-              handleSectionNavigation('Contact-Us');
-            }}>Contact Us
-            </a>
-          </nav>
-        </div>
-
-        <div className="logo">
-          <img src="/Assets/Logos&Icons/DenimaraLogoNavyNg.svg" alt="Denimora Logo" />
-        </div>
-
-        <div className="shop-page-icons">
-          <div
-            className="fas fa-shopping-bag  cart-icon-with-number"
-            id="cart-btn"
-            ref={cartBtnRef}
-            onClick={openCartMenu}
-          >
-            {cartItems.length > 0 && (
-            <span className="cart-number">{cartItems.length}</span>
-          )}
-          </div>
-          <div className="fas fa-bars" id="menu-btn" ref={menuBtnRef} onClick={openMobileMenu}></div>
-        </div>
-      </header>
+      
 
       {/* Shop Item Section */}
       <section className="shop-item-container">
@@ -453,43 +426,7 @@ const ItemDetails = () => {
         
       </section>
 
-      {/* Footer Section */}
-      <section className="footer">
-        <div className="footer-container">
-          <div className="footer-logo">
-            <img src="/Assets/Logos&Icons/denimora-logo-WhiteBg.svg" alt="Denimora Logo" />
-          </div>
-
-          <div className="footer-links">
-            <Link to="/">Home</Link>
-            <Link to="/shop">Shop</Link>
-            <a href="#" onClick={(e) => {
-              e.preventDefault();
-              handleSectionNavigation('About-Us');
-            }}>About</a>
-            <a href="#" onClick={(e) => {
-              e.preventDefault();
-              handleSectionNavigation('Contact-Us');
-            }}>Contact</a>
-          </div>
-
-          <div className="footer-socials">
-            <a
-              href="https://www.facebook.com/share/1P42RQpVK6/?mibextid=wwXIfr"
-              className="fab fa-facebook-f"
-            ></a>
-            <a
-              href="https://www.instagram.com/denimora25"
-              className="fab fa-instagram"
-            ></a>
-            <a href="https://www.tiktok.com/@denimora25?_t=ZS-8wqteSQA6lz&_r=1" className="fab fa-tiktok"></a>
-          </div>
-
-          <p className="footer-credit">
-            © <span>DENIMORA</span>
-          </p>
-        </div>
-      </section>
+      
 
       {/* Size Chart Button */}
       <button
@@ -514,89 +451,7 @@ const ItemDetails = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      <div className={`mobile-menu ${isMenuOpen ? 'active' : ''}`} id="mobileMenu" ref={menuRef}>
-        <div className="close-menu" onClick={closeMobileMenu}>&times;</div>
-        <nav>
-          <Link to="/" onClick={closeMobileMenu}>Home</Link>
-          <Link to="/shop" onClick={closeMobileMenu}>Shop</Link>
-          <a href="#" onClick={(e) => {
-            e.preventDefault();
-            handleSectionNavigation('About-Us');
-            closeMobileMenu();
-          }}>About Us</a>
-          <a href="#" onClick={(e) => {
-            e.preventDefault();
-            handleSectionNavigation('Contact-Us');
-            closeMobileMenu();
-          }}>Contact Us</a>
-        </nav>
-      </div>
-
-      {/* Cart Menu */}
-      <div className={`cart-menu ${isCartOpen ? 'active' : ''}`} id="cartMenu" ref={cartRef}>
-        <div className="close-cart" onClick={closeCartMenu}>&times;</div>
-        <div className="cart-content">
-          <h2>Your Cart</h2>
-          <div className="cart-items">
-            {!cartItems || cartItems.length === 0 ? (
-              <p className="empty-cart">Your cart is empty</p>
-            ) : (
-              cartItems.map((item, index) => {
-                console.log("Rendering cart item:", item);
-                return (
-                  <div key={`cart-item-${index}`} className="cart-item">
-                    <div className="cart-item-image">
-                      <img
-                        src={item.image_url || item.image}
-                        alt={item.name}
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = '/Assets/Shop/placeholder.jpg';
-                        }}
-                      />
-                    </div>
-                    <div className="cart-item-details">
-                      <h3>{item.name}</h3>
-                      {item.size && <p>Size: {item.size}</p>}
-                      <p>Price: LE {Number(item.price).toFixed(2)}</p>
-                      <p>Total: LE {Number(item.totalPrice || (item.price * item.quantity)).toFixed(2)}</p>
-                      <div className="cart-item-quantity">
-                        <button onClick={() => {
-                          const newQuantity = Math.max(1, item.quantity - 1);
-                          updateQuantity(item.name, item.size, newQuantity);
-                        }}>-</button>
-                        <span>{item.quantity}</span>
-                        <button onClick={() => {
-                          const newQuantity = item.quantity + 1;
-                          updateQuantity(item.name, item.size, newQuantity);
-                        }}>+</button>
-                      </div>
-                    </div>
-                    <button
-                      className="remove-item"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeFromCart(item.name, item.size);
-                      }}
-                    >
-                      <i className="fas fa-trash"></i>
-                    </button>
-                  </div>
-                );
-              })
-            )}
-          </div>
-          <div className="cart-total">
-            <p>Total: <span>LE {getTotalPrice().toFixed(2)}</span></p>
-            {cartItems && cartItems.length > 0 && (
-              <button className="checkout-btn" onClick={handleCheckoutBtn}>
-                Checkout
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
+     
     </>
   );
 };

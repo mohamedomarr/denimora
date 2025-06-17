@@ -14,6 +14,15 @@ from pathlib import Path
 import os
 from datetime import timedelta
 
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    # If python-dotenv is not installed, just continue
+    pass
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -211,15 +220,18 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOW_CREDENTIALS = True
 
+# Get email credentials from environment variables
+DENIMORA_EMAIL_USERNAME = os.getenv('DENIMORA_EMAIL_USERNAME')
+DENIMORA_EMAIL_PASSWORD = os.getenv('DENIMORA_EMAIL_PASSWORD')
 
 # Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'email'
+EMAIL_HOST_USER = DENIMORA_EMAIL_USERNAME
 # For Gmail, you need to use an App Password, not your regular password
 # Generate one at: https://myaccount.google.com/apppasswords
-EMAIL_HOST_PASSWORD = 'password'  # This should be your App Password
-DEFAULT_FROM_EMAIL = 'DENIMORA <email>'
+EMAIL_HOST_PASSWORD = DENIMORA_EMAIL_PASSWORD  # This should be your App Password
+DEFAULT_FROM_EMAIL = f"Denimora <{DENIMORA_EMAIL_USERNAME}>"
 SITE_URL = 'http://localhost:8000'  # Change this in production

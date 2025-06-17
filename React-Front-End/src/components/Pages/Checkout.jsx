@@ -44,7 +44,7 @@ const DEFAULT_SHIPPING_FEE = 100; // Fallback if API fails
 
 const Checkout = () => {
   const navigate = useNavigate();
-  const { cartItems, getTotalPrice, clearCart, validateCartBeforeCheckout } = useCart();
+  const { cartItems, getTotalPrice, clearCart, validateCartBeforeCheckout, showErrorNotification } = useCart();
   const { removeFromCart, updateQuantity } = useCart();
   const [isOrderSummaryOpen, setIsOrderSummaryOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -220,7 +220,7 @@ const Checkout = () => {
         setIsSubmitting(false);
         
         // Show error message and redirect
-        alert(validationResult.message || "Failed to proceed ! please try again in few minutes");
+        showErrorNotification(validationResult.message || "Failed to proceed ! please try again in few minutes", 'error');
         
         // Redirect to home page immediately
         navigate("/");
@@ -333,7 +333,7 @@ const Checkout = () => {
             setIsSubmitting(false);
             
             // Show error message and redirect
-            alert(apiError.response.data.message);
+            showErrorNotification(apiError.response.data.message, 'error');
             
             // Redirect to home page immediately
             navigate("/");

@@ -5,10 +5,6 @@ import { useCartMenu } from "../../contexts/CartMenuContext";
 import { useMobileMenu } from '../../contexts/MobileMenuContext';
 import { useCart } from '../../contexts/CartContext';
 import apiService from '../../services/api';
-import Header from "../Shared/header";
-import Footer from "../Shared/footer";
-import Cart from "../Shared/cart";
-import MobileMenu from "../Shared/mobilemenu";
 import '../../CSS/bootstrap.css';
 import '../../CSS/Styles.css';
 
@@ -19,7 +15,7 @@ const ItemDetails = () => {
   const navigate = useNavigate();
   const { isSizeChartOpen, sizeChartRef, sizeChartBtnRef, openSizeChart, closeSizeChart } = useSizeChart();
   const { openCartMenu } = useCartMenu();
-  const { cartItems, addToCart, removeFromCart, updateQuantity, getTotalPrice } = useCart();
+  const { cartItems, addToCart, removeFromCart, updateQuantity, getTotalPrice, showErrorNotification } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [basePrice, setBasePrice] = useState(0);
   const [isAccordionOpen, setIsAccordionOpen] = useState(false);
@@ -148,7 +144,7 @@ const ItemDetails = () => {
 
   const handleAddToCart = async () => {
     if (!selectedSize) {
-      alert('Please select a size');
+      showErrorNotification('Please select a size before adding to cart', 'warning');
       return;
     }
 
@@ -198,8 +194,14 @@ const ItemDetails = () => {
     } catch (error) {
       console.error('Error adding to cart:', error);
       
-      // Show user-friendly error message
-      alert(error.message || 'Failed to add item to cart. Please try again.');
+      // Show different notification types based on error message
+      if (error.message?.includes('try again in few minutes')) {
+        showErrorNotification(error.message, 'warning');
+      } else if (error.message?.includes('out of stock')) {
+        showErrorNotification(error.message, 'warning');
+      } else {
+        showErrorNotification(error.message || 'Failed to add item to cart. Please try again.', 'error');
+      }
       
       
     }

@@ -71,6 +71,74 @@ const ExpiredItemsNotification = () => {
   );
 };
 
+// ErrorNotification component
+const ErrorNotification = () => {
+  const { errorNotification, clearErrorNotification } = useCart();
+
+  if (!errorNotification) return null;
+
+  const getNotificationStyle = (type) => {
+    const baseStyle = {
+      position: 'fixed',
+      top: '80px', // Position below expired items notification
+      right: '20px',
+      padding: '15px 20px',
+      borderRadius: '8px',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      zIndex: 10000,
+      maxWidth: '400px',
+      fontSize: '14px',
+      fontWeight: '500',
+      animation: 'slideIn 0.3s ease-out'
+    };
+
+    switch (type) {
+      case 'error':
+        return { ...baseStyle, backgroundColor: '#ff4757', color: 'white' };
+      case 'warning':
+        return { ...baseStyle, backgroundColor: '#ffa502', color: 'white' };
+      case 'info':
+        return { ...baseStyle, backgroundColor: '#3742fa', color: 'white' };
+      default:
+        return { ...baseStyle, backgroundColor: '#ff4757', color: 'white' };
+    }
+  };
+
+  return (
+    <div 
+      className="error-notification"
+      style={getNotificationStyle(errorNotification.type)}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div style={{ flex: 1, marginRight: '10px' }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+            {errorNotification.type === 'error' && '⚠️ Unable to Add Item'}
+            {errorNotification.type === 'warning' && '⚠️ Warning'}
+            {errorNotification.type === 'info' && 'ℹ️ Information'}
+          </div>
+          <div style={{ fontSize: '13px', lineHeight: '1.4' }}>
+            {errorNotification.message}
+          </div>
+        </div>
+        <button
+          onClick={clearErrorNotification}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: 'white',
+            fontSize: '18px',
+            cursor: 'pointer',
+            padding: '0',
+            lineHeight: '1'
+          }}
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const MainLayout = ({ children }) => {
   const { showPopup, activeTab, closePopup, disableAutoShow } = usePopup();
   const { addToCart } = useCart();
@@ -243,6 +311,9 @@ const MainLayout = ({ children }) => {
 
       {/* Expired items notification */}
       <ExpiredItemsNotification />
+
+      {/* Error notification */}
+      <ErrorNotification />
     </CartPopupContext.Provider>
   );
 };

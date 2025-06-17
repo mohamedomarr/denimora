@@ -10,9 +10,11 @@ export const CartProvider = ({ children }) => {
   const [isUsingAPI, setIsUsingAPI] = useState(false);
   const [stockWarnings, setStockWarnings] = useState([]);
   const [expiredItemsNotification, setExpiredItemsNotification] = useState(null);
+  const [errorNotification, setErrorNotification] = useState(null);
   
   // Ref to track notification timeout
   const notificationTimeoutRef = useRef(null);
+  const errorNotificationTimeoutRef = useRef(null);
 
   // Get or create session ID for reservations
   const getSessionId = () => {
@@ -45,6 +47,32 @@ export const CartProvider = ({ children }) => {
     if (notificationTimeoutRef.current) {
       clearTimeout(notificationTimeoutRef.current);
       notificationTimeoutRef.current = null;
+    }
+  };
+
+  // Show error notification for add to cart failures
+  const showErrorNotification = (message, type = 'error') => {
+    setErrorNotification({
+      message,
+      type, // 'error', 'warning', 'info'
+      timestamp: Date.now()
+    });
+
+    // Clear notification after 6 seconds
+    if (errorNotificationTimeoutRef.current) {
+      clearTimeout(errorNotificationTimeoutRef.current);
+    }
+    errorNotificationTimeoutRef.current = setTimeout(() => {
+      setErrorNotification(null);
+    }, 6000);
+  };
+
+  // Clear error notification
+  const clearErrorNotification = () => {
+    setErrorNotification(null);
+    if (errorNotificationTimeoutRef.current) {
+      clearTimeout(errorNotificationTimeoutRef.current);
+      errorNotificationTimeoutRef.current = null;
     }
   };
 
@@ -535,6 +563,7 @@ export const CartProvider = ({ children }) => {
     isUsingAPI,
     stockWarnings,
     expiredItemsNotification,
+    errorNotification,
     
     // Actions
     addToCart,
@@ -543,6 +572,8 @@ export const CartProvider = ({ children }) => {
     clearCart,
     validateCartBeforeCheckout,
     clearExpiredItemsNotification,
+    clearErrorNotification,
+    showErrorNotification,
     
     // Getters
     getTotalPrice,

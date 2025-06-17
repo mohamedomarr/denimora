@@ -10,7 +10,7 @@ const CartPopup = ({
   onProductClick = null // Optional prop for when product is clicked from popup
 }) => {
   const { openCartMenu } = useCartMenu();
-  const { addToCart } = useCart();
+  const { addToCart, showErrorNotification } = useCart();
   const [selectedSize, setSelectedSize] = useState('');
   const [availableSizes, setAvailableSizes] = useState([]);
   const [isLoadingSizes, setIsLoadingSizes] = useState(false);
@@ -43,6 +43,11 @@ const CartPopup = ({
 
   // Add to cart from popup
   const handleAddToCartFromPopup = async () => {
+    if (!selectedSize) {
+      showErrorNotification('Please select a size before adding to cart', 'warning');
+      return;
+    }
+    
     if (selectedProduct && selectedSize) {
       try {
         // Find size_id from available sizes
@@ -94,7 +99,7 @@ const CartPopup = ({
         
       } catch (error) {
         console.error('Error adding to cart:', error);
-        alert(error.message || 'Failed to add item to cart. Please try again.');
+        showErrorNotification(error.message || 'Failed to add item to cart. Please try again.');
       }
     }
   };

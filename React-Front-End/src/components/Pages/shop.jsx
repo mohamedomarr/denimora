@@ -212,6 +212,7 @@ const Shop = () => {
           )}
         </div>
       </section>
+      
     </>
   );
 };

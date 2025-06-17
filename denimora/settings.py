@@ -210,3 +210,16 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
 CORS_ALLOW_CREDENTIALS = True
+
+
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'email'
+# For Gmail, you need to use an App Password, not your regular password
+# Generate one at: https://myaccount.google.com/apppasswords
+EMAIL_HOST_PASSWORD = 'password'  # This should be your App Password
+DEFAULT_FROM_EMAIL = 'DENIMORA <email>'
+SITE_URL = 'http://localhost:8000'  # Change this in production

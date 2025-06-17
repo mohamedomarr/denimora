@@ -24,13 +24,17 @@ This is a decoupled e-commerce application with a Django backend and React front
 
 3. Install dependencies:
    ```
-   pip install djangorestframework djangorestframework-simplejwt django-cors-headers
+   pip install -r Requirements.txt
    ```
 
-4. Run migrations:
-   ```
-   python manage.py migrate
-   ```
+4. **Database Setup** (Choose one):
+   
+   **Option A: PostgreSQL (Recommended for Production)**
+   - Follow the [PostgreSQL Migration Guide](POSTGRESQL_MIGRATION.md)
+   - Or run the automated setup: `python setup_postgresql.py`
+   
+   **Option B: SQLite (Development)**
+   - Run migrations: `python manage.py migrate`
 
 5. Run the development server:
    ```
@@ -38,6 +42,24 @@ This is a decoupled e-commerce application with a Django backend and React front
    ```
 
 The Django API will be available at http://localhost:8000/api/
+
+## Database Configuration
+
+This project supports both SQLite (for development) and PostgreSQL (for production):
+
+- **SQLite**: Default configuration, no additional setup required
+- **PostgreSQL**: See [POSTGRESQL_MIGRATION.md](POSTGRESQL_MIGRATION.md) for migration guide
+
+### Environment Variables
+
+For PostgreSQL, you can configure the database using environment variables:
+```bash
+export DB_NAME=denimora_db
+export DB_USER=denimora_user
+export DB_PASSWORD=denimora_password
+export DB_HOST=localhost
+export DB_PORT=5432
+```
 
 ### Frontend (React)
 

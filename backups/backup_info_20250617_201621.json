@@ -1,0 +1,11 @@
+{
+  "timestamp": "20250617_201621",
+  "postgresql_backup": "backups/postgres_backup_20250617_201621.sql",
+  "django_backup": "backups/django_backup_20250617_201621.json",
+  "database_config": {
+    "name": "denimora_db",
+    "user": "denimora",
+    "host": "localhost",
+    "port": "5433"
+  }
+}

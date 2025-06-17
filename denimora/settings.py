@@ -86,12 +86,28 @@ WSGI_APPLICATION = 'denimora.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Import database configuration
+try:
+    from database_config import DATABASE_CONFIG
+    # PostgreSQL Configuration
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': DATABASE_CONFIG['NAME'],
+            'USER': DATABASE_CONFIG['USER'],
+            'PASSWORD': DATABASE_CONFIG['PASSWORD'],
+            'HOST': DATABASE_CONFIG['HOST'],
+            'PORT': DATABASE_CONFIG['PORT'],
+        }
     }
-}
+except ImportError:
+    # Fallback to SQLite if database_config.py is not found
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation

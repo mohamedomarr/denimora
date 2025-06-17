@@ -61,7 +61,7 @@ const Footer = () => {
             className="fab fa-facebook-f"
           ></a>
           <a
-            href="https://www.instagram.com/denimora25"
+            href="https://www.instagram.com/denimoraa.co"
             className="fab fa-instagram"
           ></a>
           <a 

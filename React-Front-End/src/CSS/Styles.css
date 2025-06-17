@@ -43,7 +43,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url(/public/Assets/Shop/Shop2.jpg);
+    background-image: url(/public/Assets/Shop/Testing-Shop/Shop2.jpg);
     background-attachment: fixed;
     background-size: cover;
     background-position: center;
@@ -482,7 +482,7 @@ p {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url(/public/Assets/Shop/ConatctBgCover1.jpg);
+    background-image: url(/public/Assets/Shop/Testing-Shop/ConatctBgCover1.jpg);
     background-attachment: fixed;
     background-size: cover;
     background-position: center;

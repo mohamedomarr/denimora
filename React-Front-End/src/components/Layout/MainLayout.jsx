@@ -26,7 +26,7 @@ const ExpiredItemsNotification = () => {
   if (!expiredItemsNotification) return null;
 
   return (
-    <div 
+    <div
       className="expired-items-notification"
       style={{
         position: 'fixed',
@@ -105,7 +105,7 @@ const ErrorNotification = () => {
   };
 
   return (
-    <div 
+    <div
       className="error-notification"
       style={getNotificationStyle(errorNotification.type)}
     >
@@ -142,7 +142,7 @@ const ErrorNotification = () => {
 const MainLayout = ({ children }) => {
   const { showPopup, activeTab, closePopup, disableAutoShow } = usePopup();
   const { addToCart } = useCart();
-  
+
   // Popup subscription state
   const [subscriptionForm, setSubscriptionForm] = useState({
     email: "",
@@ -200,14 +200,14 @@ const MainLayout = ({ children }) => {
     setIsSubscribing(true);
     try {
       const response = await apiService.subscribeEmail(subscriptionForm.email, 'popup');
-      
+
       if (response.data.success) {
         setSubscriptionSuccess(true);
         setSubscriptionForm({ email: "" });
-        disableAutoShow();
-        
+
         setTimeout(() => {
           setSubscriptionSuccess(false);
+          disableAutoShow(); // Move disableAutoShow here
           closePopup();
         }, 5000);
       } else {
@@ -218,11 +218,11 @@ const MainLayout = ({ children }) => {
     } catch (error) {
       console.error("Error subscribing:", error);
       let errorMessage = "Failed to subscribe. Please try again.";
-      
+
       if (error.response?.data?.error) {
         errorMessage = error.response.data.error;
       }
-      
+
       setSubscriptionErrors({ email: errorMessage });
     } finally {
       setIsSubscribing(false);
@@ -264,9 +264,8 @@ const MainLayout = ({ children }) => {
             </span>
 
             <div
-              className={`tab-content ${
-                activeTab === "signup" ? "active" : ""
-              }`}
+              className={`tab-content ${activeTab === "signup" ? "active" : ""
+                }`}
               id="subscribe"
             >
               <h2>Subscribe Our E-mail Newsletter</h2>
@@ -303,7 +302,7 @@ const MainLayout = ({ children }) => {
       )}
 
       {/* Global Add to Cart Popup */}
-      <CartPopup 
+      <CartPopup
         showPopup={showAddCartPopup}
         selectedProduct={selectedProduct}
         onClose={handleCloseAddCartPopup}
@@ -314,6 +313,7 @@ const MainLayout = ({ children }) => {
 
       {/* Error notification */}
       <ErrorNotification />
+
     </CartPopupContext.Provider>
   );
 };

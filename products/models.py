@@ -74,11 +74,9 @@ class Product(models.Model):
     @property
     def image_url(self):
         if self.image and hasattr(self.image, 'url'):
-            # Return full URL for production, relative for development
-            if hasattr(settings, 'SITE_URL') and settings.SITE_URL:
-                return f"{settings.SITE_URL.rstrip('/')}{self.image.url}"
-            return self.image.url
-        return '/static/Assets/Shop/default-product.jpg'
+            site_url = getattr(settings, 'SITE_URL', None) or 'https://denimora.onrender.com'
+            return f"{site_url.rstrip('/')}{self.image.url}"
+        return f"{getattr(settings, 'SITE_URL', None) or 'https://denimora.onrender.com'}/static/Assets/Shop/default-product.jpg"
 
 
 class ProductSize(models.Model):

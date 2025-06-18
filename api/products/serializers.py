@@ -28,6 +28,7 @@ class ProductSerializer(serializers.ModelSerializer):
     sizes = SizeSerializer(many=True, read_only=True)
     available_sizes = serializers.SerializerMethodField()
     detail_images = ProductImageSerializer(many=True, read_only=True)
+    image_url = serializers.ReadOnlyField()
     
     class Meta:
         model = Product

@@ -244,4 +244,4 @@ EMAIL_HOST_PASSWORD = DENIMORA_EMAIL_PASSWORD  # This should be your App Passwor
 DEFAULT_FROM_EMAIL = f"Denimora <{DENIMORA_EMAIL_USERNAME}>"
 
 # Site URL configuration - for generating full URLs in API responses
-SITE_URL = os.getenv('SITE_URL', 'http://localhost:8000')
+SITE_URL = os.getenv('SITE_URL', 'https://denimora.onrender.com')

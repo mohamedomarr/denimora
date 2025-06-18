@@ -21,7 +21,7 @@ class ProductSizeSerializer(serializers.ModelSerializer):
 class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImage
-        fields = ['id', 'image', 'alt_text']
+        fields = ['id', 'image', 'image_url', 'alt_text']
 
 class ProductSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)

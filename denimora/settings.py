@@ -61,6 +61,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add WhiteNoise for static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',  # CORS middleware
     'django.middleware.common.CommonMiddleware',
@@ -156,15 +157,22 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Media files
+# Media files (User uploaded content like product images)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# For production (Render), serve static and media files
+if not DEBUG:
+    # Use WhiteNoise for static files in production
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    # For media files, we'll serve them through Django (not ideal for large scale, but works for now)
+    pass
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -234,4 +242,6 @@ EMAIL_HOST_USER = DENIMORA_EMAIL_USERNAME
 # Generate one at: https://myaccount.google.com/apppasswords
 EMAIL_HOST_PASSWORD = DENIMORA_EMAIL_PASSWORD  # This should be your App Password
 DEFAULT_FROM_EMAIL = f"Denimora <{DENIMORA_EMAIL_USERNAME}>"
-SITE_URL = 'http://localhost:8000'  # Change this in production
+
+# Site URL configuration - for generating full URLs in API responses
+SITE_URL = os.getenv('SITE_URL', 'http://localhost:8000')

@@ -271,7 +271,7 @@ const ItemDetails = () => {
           {itemData.detail_images && itemData.detail_images.length > 0 ? (
             <div className="slider-wrapper">
               <img
-                src={itemData.detail_images[currentSlide].image}
+                src={itemData.detail_images[currentSlide].image_url || itemData.detail_images[currentSlide].image}
                 alt={itemData.detail_images[currentSlide].alt_text || itemData.name}
                 className="slider-main-img"
               />
@@ -291,7 +291,7 @@ const ItemDetails = () => {
                     return (
                       <img
                         key={img.id}
-                        src={img.image}
+                        src={img.image_url || img.image}
                         alt={img.alt_text || itemData.name}
                         className={`slider-thumb ${currentSlide === realIdx ? 'active' : ''}`}
                         style={{

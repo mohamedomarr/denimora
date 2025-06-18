@@ -2,6 +2,7 @@ from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
 from rest_framework import viewsets
+from django.conf import settings
 
 
 class Category(models.Model):
@@ -73,6 +74,9 @@ class Product(models.Model):
     @property
     def image_url(self):
         if self.image and hasattr(self.image, 'url'):
+            # Return full URL for production, relative for development
+            if hasattr(settings, 'SITE_URL') and settings.SITE_URL:
+                return f"{settings.SITE_URL.rstrip('/')}{self.image.url}"
             return self.image.url
         return '/static/Assets/Shop/default-product.jpg'
 
@@ -99,5 +103,14 @@ class ProductImage(models.Model):
 
     def __str__(self):
         return f"Image for {self.product.name}"
+    
+    @property
+    def image_url(self):
+        if self.image and hasattr(self.image, 'url'):
+            # Return full URL for production, relative for development
+            if hasattr(settings, 'SITE_URL') and settings.SITE_URL:
+                return f"{settings.SITE_URL.rstrip('/')}{self.image.url}"
+            return self.image.url
+        return None
 
 

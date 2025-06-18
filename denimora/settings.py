@@ -165,16 +165,16 @@ STATICFILES_DIRS = [
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Media files (User uploaded content like product images)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# Media files (Cloudinary handles all uploads)
+MEDIA_URL = '/media/'  # This can stay, but is not used by Cloudinary
 
-# For production (Render), serve static and media files
+# Cloudinary storage settings (already set above)
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+# No need for MEDIA_ROOT when using Cloudinary
+
+# For production (Render), serve static files with WhiteNoise
 if not DEBUG:
-    # Use WhiteNoise for static files in production
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-    # For media files, we'll serve them through Django (not ideal for large scale, but works for now)
-    pass
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -253,5 +253,3 @@ CLOUDINARY_STORAGE = {
     'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
     'API_SECRET': os.getenv('CLOUDINARY_API_SECRET')
 }
-
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'

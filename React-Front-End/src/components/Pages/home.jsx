@@ -307,7 +307,7 @@ const Home = () => {
                 }}
               >
                 <div className="product-img-wrapper">
-                  <img src={getFullImageUrl(product.image_url || product.image)} alt={product.name} />
+                                      <img src={getFullImageUrl(product.image_url, product.image)} alt={product.name} />
                   <a href="#" className="cart-icon" onClick={(e) => handleCartIconClick(e, product)}>
                     <i className="fas fa-bag-shopping"></i>
                   </a>

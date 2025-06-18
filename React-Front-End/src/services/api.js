@@ -18,21 +18,24 @@ const getBackendBaseUrl = () => {
 };
 
 // Helper function to ensure image URLs are properly formatted
-const getFullImageUrl = (imageUrl) => {
-  if (!imageUrl) return null;
+const getFullImageUrl = (imageUrl, fallbackImage = null) => {
+  // Use imageUrl if available, otherwise fallback to fallbackImage
+  const url = imageUrl || fallbackImage;
+  
+  if (!url) return null;
   
   // If it's already a full URL, return as-is
-  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-    return imageUrl;
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
   }
   
   // If it's a relative URL starting with /, prepend backend base URL
-  if (imageUrl.startsWith('/')) {
-    return `${getBackendBaseUrl()}${imageUrl}`;
+  if (url.startsWith('/')) {
+    return `${getBackendBaseUrl()}${url}`;
   }
   
   // Otherwise, return the original URL
-  return imageUrl;
+  return url;
 };
 
 // Create an axios instance with defaults

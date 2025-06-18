@@ -78,7 +78,7 @@ const Cart = () => {
                 >
                   <div className="cart-item-image">
                     <img 
-                      src={getFullImageUrl(item.image_url || item.image)} 
+                      src={getFullImageUrl(item.image_url, item.image)} 
                       alt={item.name}
                       onError={(e) => {
                         e.target.onerror = null;

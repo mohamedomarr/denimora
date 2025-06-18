@@ -133,7 +133,7 @@ const CartPopup = ({
         </span>
 
         <img 
-          src={getFullImageUrl(selectedProduct.image_url || selectedProduct.image)} 
+          src={getFullImageUrl(selectedProduct.image_url, selectedProduct.image)} 
           alt={selectedProduct.name} 
           className="popup-product-img"
           style={{ cursor: onProductClick ? 'pointer' : 'default' }}

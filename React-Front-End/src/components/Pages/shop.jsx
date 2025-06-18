@@ -188,7 +188,7 @@ const Shop = () => {
               >
                 <div className="product-img-wrapper">
                   <img
-                    src={getFullImageUrl(product.image_url)}
+                    src={getFullImageUrl(product.image_url, product.image)}
                     alt={product.name}
                     onError={(e) => {
                       e.target.onerror = null;

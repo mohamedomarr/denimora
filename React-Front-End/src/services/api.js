@@ -1,8 +1,19 @@
 import axios from 'axios';
 
+// Get the API base URL from environment variables or use default
+const getApiBaseUrl = () => {
+  // In production, use the environment variable
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  
+  // In development, use localhost
+  return 'http://localhost:8000/api';
+};
+
 // Create an axios instance with defaults
 const API = axios.create({
-  baseURL: 'http://localhost:8000/api',
+  baseURL: getApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
@@ -167,7 +178,7 @@ API.interceptors.response.use(
         }
         
         // Try to get a new access token
-        const response = await axios.post('http://localhost:8000/api/token/refresh/', {
+        const response = await axios.post(`${getApiBaseUrl()}/token/refresh/`, {
           refresh: refreshToken
         });
         

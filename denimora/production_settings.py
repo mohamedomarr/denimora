@@ -43,7 +43,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # CORS settings for production - update with your frontend domain
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # For development
-    # Add your production frontend URL here
+    "https://denimora.netlify.app",  # Replace with your actual Netlify URL
+    "https://denimora.co",  # Add your custom domain if you have one
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -51,6 +52,8 @@ CORS_ALLOW_CREDENTIALS = True
 # CSRF settings - update with your actual domain
 CSRF_TRUSTED_ORIGINS = [
     "https://*.onrender.com",  # This allows any subdomain on onrender.com
+    "https://denimora.netlify.app",  # Replace with your actual Netlify URL
+    "https://denimora.co",  # Add your custom domain if you have one
 ]
 
 # Security settings

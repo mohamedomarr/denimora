@@ -4,7 +4,7 @@ import { useMobileMenu } from "../../contexts/MobileMenuContext";
 import { useCartMenu } from "../../contexts/CartMenuContext";
 import { useCart } from "../../contexts/CartContext";
 import { useCartPopup } from "../Layout/MainLayout";
-import apiService from "../../services/api";
+import apiService, { getFullImageUrl } from "../../services/api";
 import "../../CSS/bootstrap.css";
 import "../../CSS/Styles.css";
 
@@ -307,7 +307,7 @@ const Home = () => {
                 }}
               >
                 <div className="product-img-wrapper">
-                  <img src={product.image_url || product.image} alt={product.name} />
+                  <img src={getFullImageUrl(product.image_url || product.image)} alt={product.name} />
                   <a href="#" className="cart-icon" onClick={(e) => handleCartIconClick(e, product)}>
                     <i className="fas fa-bag-shopping"></i>
                   </a>

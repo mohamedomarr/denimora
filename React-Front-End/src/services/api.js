@@ -11,6 +11,30 @@ const getApiBaseUrl = () => {
   return 'http://localhost:8000/api';
 };
 
+// Get the backend base URL (without /api suffix) for image URLs
+const getBackendBaseUrl = () => {
+  const apiUrl = getApiBaseUrl();
+  return apiUrl.replace('/api', '');
+};
+
+// Helper function to ensure image URLs are properly formatted
+const getFullImageUrl = (imageUrl) => {
+  if (!imageUrl) return null;
+  
+  // If it's already a full URL, return as-is
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl;
+  }
+  
+  // If it's a relative URL starting with /, prepend backend base URL
+  if (imageUrl.startsWith('/')) {
+    return `${getBackendBaseUrl()}${imageUrl}`;
+  }
+  
+  // Otherwise, return the original URL
+  return imageUrl;
+};
+
 // Create an axios instance with defaults
 const API = axios.create({
   baseURL: getApiBaseUrl(),
@@ -204,6 +228,7 @@ API.interceptors.response.use(
 const apiService = {
   // Utility methods
   getBaseUrl: () => API.defaults.baseURL,
+  getFullImageUrl: getFullImageUrl,
   
   // Health check
   checkHealth: () => API.get('/health/'),
@@ -276,3 +301,4 @@ const apiService = {
 };
 
 export default apiService;
+export { getFullImageUrl };

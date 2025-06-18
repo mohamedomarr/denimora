@@ -5,7 +5,7 @@ import { useMobileMenu } from '../../contexts/MobileMenuContext';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCartPopup } from '../Layout/MainLayout';
-import apiService from '../../services/api';
+import apiService, { getFullImageUrl } from '../../services/api';
 import '../../CSS/bootstrap.css';
 import '../../CSS/Styles.css';
 
@@ -188,7 +188,7 @@ const Shop = () => {
               >
                 <div className="product-img-wrapper">
                   <img
-                    src={product.image_url}
+                    src={getFullImageUrl(product.image_url)}
                     alt={product.name}
                     onError={(e) => {
                       e.target.onerror = null;

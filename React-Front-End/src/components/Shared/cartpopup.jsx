@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useCartMenu } from "../../contexts/CartMenuContext";
 import { useCart } from "../../contexts/CartContext";
-import apiService from "../../services/api";
+import apiService, { getFullImageUrl } from "../../services/api";
 
 const CartPopup = ({ 
   showPopup, 
@@ -133,7 +133,7 @@ const CartPopup = ({
         </span>
 
         <img 
-          src={selectedProduct.image_url || selectedProduct.image} 
+          src={getFullImageUrl(selectedProduct.image_url || selectedProduct.image)} 
           alt={selectedProduct.name} 
           className="popup-product-img"
           style={{ cursor: onProductClick ? 'pointer' : 'default' }}

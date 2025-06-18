@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCartMenu } from "../../contexts/CartMenuContext";
 import { useCart } from "../../contexts/CartContext";
+import { getFullImageUrl } from "../../services/api";
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -77,7 +78,7 @@ const Cart = () => {
                 >
                   <div className="cart-item-image">
                     <img 
-                      src={item.image_url || item.image} 
+                      src={getFullImageUrl(item.image_url || item.image)} 
                       alt={item.name}
                       onError={(e) => {
                         e.target.onerror = null;

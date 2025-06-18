@@ -4,7 +4,7 @@ import { useSizeChart } from '../../hooks/useSizeChart';
 import { useCartMenu } from "../../contexts/CartMenuContext";
 import { useMobileMenu } from '../../contexts/MobileMenuContext';
 import { useCart } from '../../contexts/CartContext';
-import apiService from '../../services/api';
+import apiService, { getFullImageUrl } from '../../services/api';
 import '../../CSS/bootstrap.css';
 import '../../CSS/Styles.css';
 
@@ -271,7 +271,7 @@ const ItemDetails = () => {
           {itemData.detail_images && itemData.detail_images.length > 0 ? (
             <div className="slider-wrapper">
               <img
-                src={itemData.detail_images[currentSlide].image_url || itemData.detail_images[currentSlide].image}
+                src={getFullImageUrl(itemData.detail_images[currentSlide].image_url || itemData.detail_images[currentSlide].image)}
                 alt={itemData.detail_images[currentSlide].alt_text || itemData.name}
                 className="slider-main-img"
               />
@@ -291,7 +291,7 @@ const ItemDetails = () => {
                     return (
                       <img
                         key={img.id}
-                        src={img.image_url || img.image}
+                        src={getFullImageUrl(img.image_url || img.image)}
                         alt={img.alt_text || itemData.name}
                         className={`slider-thumb ${currentSlide === realIdx ? 'active' : ''}`}
                         style={{
@@ -307,7 +307,7 @@ const ItemDetails = () => {
             </div>
           ) : (
             <img
-              src={itemData.image}
+              src={getFullImageUrl(itemData.image)}
               alt={itemData.name}
               id="productImage"
               onError={(e) => {

@@ -1,9 +1,11 @@
 [build]
   publish = "build"
-  command = "npm run build"
+  command = "npm run build:netlify"
 
 [build.environment]
   REACT_APP_API_URL = "https://denimora.onrender.com/api"
+  GENERATE_SOURCEMAP = "false"
+  CI = "false"
 
 [[redirects]]
   from = "/*"

@@ -57,8 +57,6 @@ INSTALLED_APPS = [
     'cart',
     'orders',
     'communications',
-    'cloudinary',
-    'cloudinary_storage',
 ]
 
 MIDDLEWARE = [
@@ -165,16 +163,16 @@ STATICFILES_DIRS = [
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Media files (Cloudinary handles all uploads)
-MEDIA_URL = '/media/'  # This can stay, but is not used by Cloudinary
+# Media files (User uploaded content like product images)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Cloudinary storage settings (already set above)
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-# No need for MEDIA_ROOT when using Cloudinary
-
-# For production (Render), serve static files with WhiteNoise
+# For production (Render), serve static and media files
 if not DEBUG:
+    # Use WhiteNoise for static files in production
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    # For media files, we'll serve them through Django (not ideal for large scale, but works for now)
+    pass
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -247,9 +245,3 @@ DEFAULT_FROM_EMAIL = f"Denimora <{DENIMORA_EMAIL_USERNAME}>"
 
 # Site URL configuration - for generating full URLs in API responses
 SITE_URL = os.getenv('SITE_URL', 'https://denimora.onrender.com')
-
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
-    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET')
-}

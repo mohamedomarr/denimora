@@ -11,6 +11,8 @@ ALLOWED_HOSTS = [
     '.onrender.com',  # This allows any subdomain on onrender.com
     'localhost',
     '127.0.0.1',
+    'denimora.co',
+    'denimora.netlify.app',
 ]
 
 # Add WhiteNoise middleware for static files

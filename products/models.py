@@ -74,10 +74,6 @@ class Product(models.Model):
     @property
     def image_url(self):
         if self.image and hasattr(self.image, 'url'):
-            # For Cloudinary, the URL is already absolute
-            if 'cloudinary' in str(self.image.url):
-                return self.image.url
-            # For local/Render serving, ensure absolute URL
             site_url = getattr(settings, 'SITE_URL', None) or 'https://denimora.onrender.com'
             return f"{site_url.rstrip('/')}{self.image.url}"
         return f"{getattr(settings, 'SITE_URL', None) or 'https://denimora.onrender.com'}/static/Assets/Shop/default-product.jpg"

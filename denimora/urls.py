@@ -2,6 +2,8 @@ from django.urls import path, include
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.static import serve
+from django.urls import re_path
 from . import views
 
 urlpatterns = [
@@ -16,8 +18,14 @@ urlpatterns = [
     path('api/communications/', include('communications.urls', namespace='communications')),
 ]
 
-# Serve media files in all environments (development and production)
+# Serve media files in all environments (including production on Render)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Additional explicit media serving for production
+if not settings.DEBUG:
+    urlpatterns += [
+        re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    ]
 
 # Serve static files only in development (WhiteNoise handles this in production)
 if settings.DEBUG:

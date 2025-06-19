@@ -19,6 +19,4 @@ urlpatterns = [
 # Serve media files in all environments (development and production)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-# Serve static files only in development (WhiteNoise handles this in production)
-if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+

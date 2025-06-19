@@ -13,6 +13,22 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
 ]
 
+# Add Cloudinary to installed apps
+INSTALLED_APPS += [
+    'cloudinary_storage',
+    'cloudinary',
+]
+
+# Cloudinary Configuration for Media Files
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET')
+}
+
+# Set Cloudinary as default file storage
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
 # Add WhiteNoise middleware for static files
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -36,9 +52,8 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Media files
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# Media files handled by Cloudinary
+MEDIA_URL = '/media/'  # Fallback, not used by Cloudinary
 
 # CORS settings for production - update with your frontend domain
 CORS_ALLOWED_ORIGINS = [

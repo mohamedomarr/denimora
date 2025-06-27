@@ -2,6 +2,8 @@ from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
 from rest_framework import viewsets
+from django.conf import settings
+from storage.github_storage import GitHubMediaStorage
 
 
 class Category(models.Model):
@@ -43,7 +45,7 @@ class Product(models.Model):
     category = models.ForeignKey(Category, related_name='products', on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
     slug = models.SlugField(max_length=200)
-    image = models.ImageField(upload_to='products/%Y/%m/%d', blank=True)
+    image = models.ImageField(upload_to='products/%Y/%m/%d', blank=True, storage=GitHubMediaStorage())
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     sizes = models.ManyToManyField(Size, related_name='products', blank=True)
@@ -73,6 +75,10 @@ class Product(models.Model):
     @property
     def image_url(self):
         if self.image and hasattr(self.image, 'url'):
+            # Get the backend URL from settings
+            backend_url = getattr(settings, 'BACKEND_URL', '')
+            if backend_url:
+                return f"{backend_url.rstrip('/')}{self.image.url}"
             return self.image.url
         return '/static/Assets/Shop/default-product.jpg'
 
@@ -94,10 +100,20 @@ class ProductSize(models.Model):
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, related_name='detail_images', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='products/details/%Y/%m/%d')
+    image = models.ImageField(upload_to='products/details/%Y/%m/%d', storage=GitHubMediaStorage())
     alt_text = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
         return f"Image for {self.product.name}"
+
+    @property
+    def image_url(self):
+        if self.image and hasattr(self.image, 'url'):
+            # Get the backend URL from settings
+            backend_url = getattr(settings, 'BACKEND_URL', '')
+            if backend_url:
+                return f"{backend_url.rstrip('/')}{self.image.url}"
+            return self.image.url
+        return ''
 
 

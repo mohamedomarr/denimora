@@ -72,3 +72,14 @@ DEFAULT_FROM_EMAIL = f"Denimora <{os.environ.get('DENIMORA_EMAIL_USERNAME', 'nor
 
 # Use the environment variable or fallback to localhost for development
 SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000') 
+
+
+# GitHub Storage Configuration (using environment variables)
+GITHUB_STORAGE_TOKEN = os.environ.get('GITHUB_STORAGE_TOKEN')
+GITHUB_STORAGE_REPO_OWNER = os.environ.get('GITHUB_STORAGE_REPO_OWNER', 'AAshry10')
+GITHUB_STORAGE_REPO_NAME = os.environ.get('GITHUB_STORAGE_REPO_NAME', 'denimora-media')
+GITHUB_STORAGE_BRANCH = os.environ.get('GITHUB_STORAGE_BRANCH', 'main')
+GITHUB_STORAGE_BASE_PATH = os.environ.get('GITHUB_STORAGE_BASE_PATH', 'media/')
+
+# Use GitHub storage for media files
+DEFAULT_FILE_STORAGE = 'storage.github_storage.GitHubMediaStorage'

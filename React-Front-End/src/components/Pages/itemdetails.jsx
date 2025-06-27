@@ -7,8 +7,8 @@ import { useCart } from '../../contexts/CartContext';
 import apiService from '../../services/api';
 import '../../CSS/bootstrap.css';
 import '../../CSS/Styles.css';
+import useEmblaCarousel from 'embla-carousel-react';
 
-const MAX_VISIBLE_THUMBNAILS = 4;
 
 const ItemDetails = () => {
   const [searchParams] = useSearchParams();
@@ -24,10 +24,10 @@ const ItemDetails = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [availableSizes, setAvailableSizes] = useState([]);
-  // slider states
-  const [currentSlide, setCurrentSlide] = useState(0); 
-  const [thumbStart, setThumbStart] = useState(0);
-  const [dragStartX, setDragStartX] = useState(null);
+  // Embla Carousel states
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+  const [thumbEmblaRef, thumbEmblaApi] = useEmblaCarousel({ containScroll: 'keepSnaps', dragFree: true });
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const productId = searchParams.get('id');
   const productSlug = searchParams.get('slug');
   // Keep these for backward (Fallback) compatibility
@@ -209,52 +209,17 @@ const ItemDetails = () => {
 
   const totalPrice = basePrice * quantity;
 
-  // adjust the thumbnail window if needed
+  // Sync main and thumbnail carousels
   useEffect(() => {
-    if (!itemData?.detail_images) return;
-    if (currentSlide < thumbStart) {
-      setThumbStart(currentSlide);
-    } else if (currentSlide >= thumbStart + MAX_VISIBLE_THUMBNAILS) {
-      setThumbStart(currentSlide - MAX_VISIBLE_THUMBNAILS + 1);
-    }
-  }, [currentSlide, itemData]);
+    if (!emblaApi || !thumbEmblaApi) return;
+    emblaApi.on('select', () => {
+      setSelectedIndex(emblaApi.selectedScrollSnap());
+      thumbEmblaApi && thumbEmblaApi.scrollTo(emblaApi.selectedScrollSnap());
+    });
+  }, [emblaApi, thumbEmblaApi]);
 
-  const handleThumbTouchStart = (e) => {
-    setDragStartX(e.touches[0].clientX);
-  };
-
-  const handleThumbTouchMove = (e) => {
-    if (dragStartX === null) return;
-    const deltaX = e.touches[0].clientX - dragStartX;
-    if (Math.abs(deltaX) > 30) {
-      if (deltaX < 0 && thumbStart + MAX_VISIBLE_THUMBNAILS < itemData.detail_images.length) {
-        setThumbStart(thumbStart + 1);
-      } else if (deltaX > 0 && thumbStart > 0) {
-        setThumbStart(thumbStart - 1);
-      }
-      setDragStartX(null);
-    }
-  };
-
-  const handleThumbMouseDown = (e) => {
-    setDragStartX(e.clientX);
-  };
-
-  const handleThumbMouseMove = (e) => {
-    if (dragStartX === null) return;
-    const deltaX = e.clientX - dragStartX;
-    if (Math.abs(deltaX) > 30) {
-      if (deltaX < 0 && thumbStart + MAX_VISIBLE_THUMBNAILS < itemData.detail_images.length) {
-        setThumbStart(thumbStart + 1);
-      } else if (deltaX > 0 && thumbStart > 0) {
-        setThumbStart(thumbStart - 1);
-      }
-      setDragStartX(null);
-    }
-  };
-
-  const handleThumbMouseUp = () => {
-    setDragStartX(null);
+  const scrollTo = (idx) => {
+    if (emblaApi) emblaApi.scrollTo(idx);
   };
 
   if (isLoading) return <div className="loading">Loading product details...</div>;
@@ -269,42 +234,41 @@ const ItemDetails = () => {
       <section className="shop-item-container">
         <div className="shop-item-img">
           {itemData.detail_images && itemData.detail_images.length > 0 ? (
-            <div className="slider-wrapper">
-              <img
-                src={itemData.detail_images[currentSlide].image}
-                alt={itemData.detail_images[currentSlide].alt_text || itemData.name}
-                className="slider-main-img"
-              />
-             
-              <div className="slider-thumbnails" style={{ overflow: "hidden", maxWidth: "100%" }}
-                onTouchStart={handleThumbTouchStart} 
-                onTouchMove={handleThumbTouchMove} 
-                onTouchEnd={() => setDragStartX(null)} 
-                onMouseDown={handleThumbMouseDown} 
-                onMouseMove={handleThumbMouseMove} 
-                onMouseUp={handleThumbMouseUp} 
-                onMouseLeave={handleThumbMouseUp}>
-                {itemData.detail_images
-                  .slice(thumbStart, thumbStart + MAX_VISIBLE_THUMBNAILS)
-                  .map((img, idx) => {
-                    const realIdx = thumbStart + idx;
-                    return (
+            <>
+              <div className="embla" ref={emblaRef}>
+                <div className="embla__container">
+                  {itemData.detail_images.map((img, idx) => (
+                    <div className="embla__slide" key={img.id}>
                       <img
-                        key={img.id}
-                        src={img.image}
+                        src={img.image_url}
                         alt={img.alt_text || itemData.name}
-                        className={`slider-thumb ${currentSlide === realIdx ? 'active' : ''}`}
-                        style={{
-                          cursor: 'pointer',
-                          maxWidth: 50,
-                          margin: 2
-                        }}
-                        onClick={() => setCurrentSlide(realIdx)}
+                        className="slider-main-img"
+                        style={{ width: '100%', borderRadius: 8 }}
                       />
-                    );
-                  })}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+              <div className="embla embla--thumb" ref={thumbEmblaRef} style={{ marginTop: 12 }}>
+                <div className="embla__container">
+                  {itemData.detail_images.map((img, idx) => (
+                    <div
+                      className={`embla__slide embla__slide--thumb ${selectedIndex === idx ? 'is-selected' : ''}`}
+                      key={img.id}
+                      style={{ cursor: 'pointer', padding: 2 }}
+                      onClick={() => scrollTo(idx)}
+                    >
+                      <img
+                        src={img.image_url}
+                        alt={img.alt_text || itemData.name}
+                        className="slider-thumb"
+                        style={{ maxWidth: 60, border: selectedIndex === idx ? '2px solid #B59F73' : '2px solid #eee', borderRadius: 8 }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
           ) : (
             <img
               src={itemData.image}

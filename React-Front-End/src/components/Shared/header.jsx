@@ -24,6 +24,17 @@ const Header = () => {
     ? '/Assets/Logos&Icons/Footer-Logo.svg' 
     : '/Assets/Logos&Icons/DenimaraLogoNavyNg.svg';
 
+  // Handle cart icon click - responsive behavior
+  const handleCartClick = () => {
+    if (window.innerWidth < 768) {
+      // On mobile, navigate to cart page
+      navigate("/cart");
+    } else {
+      // On desktop, open cart modal/drawer
+      openCartMenu();
+    }
+  };
+
   // Handle section navigation
   const handleSectionNavigation = (sectionId) => {
     if (isHome) {
@@ -82,7 +93,7 @@ const Header = () => {
           className="fas fa-shopping-bag cart-icon-with-number"
           id="cart-btn"
           ref={cartBtnRef}
-          onClick={openCartMenu}
+          onClick={handleCartClick}
         >
           {cartItems.length > 0 && (
             <span className="cart-number">{cartItems.length}</span>

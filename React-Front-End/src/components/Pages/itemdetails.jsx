@@ -193,7 +193,7 @@ const ItemDetails = () => {
       }
     } catch (error) {
       console.error('Error adding to cart:', error);
-      
+
       // Show different notification types based on error message
       if (error.message?.includes('try again in few minutes')) {
         showErrorNotification(error.message, 'warning');
@@ -202,8 +202,8 @@ const ItemDetails = () => {
       } else {
         showErrorNotification(error.message || 'Failed to add item to cart. Please try again.', 'error');
       }
-      
-      
+
+
     }
   };
 
@@ -228,7 +228,7 @@ const ItemDetails = () => {
 
   return (
     <>
-      
+
 
       {/* Shop Item Section */}
       <section className="shop-item-container">
@@ -287,11 +287,14 @@ const ItemDetails = () => {
             <h3 id="productName">{itemData.name}</h3>
             <h3>LE {basePrice.toFixed(2)}</h3>
             <p>
-              {itemData.description || `Denimora
-              100% cotton of softness and does not contain polyester and elastin
-              2 High quality due to the methods of fabric and treatment
-              3 High density fabric (From 12 To 14) ounces for each one
-              Which means a distinctive appearance`}
+              {itemData.description || `100% cotton of softness and does not contain polyester and elastin,
+                High quality due to the methods of fabric and treatment,
+                High density fabric (From 12 To 14) ounces for each one,
+                Which means a distinctive appearance,
+                Average weight,
+                Made of Denim Saladge's fabric, which is one of the highest raw materials,
+                investment value because it lives for long years,
+                The best option for the professionals who appreciate the quality,The bladder, design and luxurious details`}
             </p>
 
             <div className="size-selection">
@@ -383,25 +386,24 @@ const ItemDetails = () => {
             >
               <div className="accordion-body">
                 <p>
-                  {itemData.description || `Denimora
-                  100% cotton of softness and does not contain polyester and elastin
-                  High quality due to the methods of fabric and treatment
-                  High density fabric (From 12 To 14) ounces for each one
-                  Which means a distinctive appearance
-                  Average weight
-                  Made of Denim Saladge's fabric, which is one of the highest raw materials
-                  investment value because it lives for long years
-                  The best option for the professionals who appreciate the quality,The bladder, design and luxurious details`}
+                  {itemData.description || `100% cotton of softness and does not contain polyester and elastin,
+                    High quality due to the methods of fabric and treatment,
+                    High density fabric (From 12 To 14) ounces for each one,
+                    Which means a distinctive appearance,
+                    Average weight,
+                    Made of Denim Saladge's fabric, which is one of the highest raw materials,
+                    investment value because it lives for long years,
+                    The best option for the professionals who appreciate the quality,The bladder, design and luxurious details`}
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        
+
       </section>
 
-      
+
 
       {/* Size Chart Button */}
       <button
@@ -426,7 +428,7 @@ const ItemDetails = () => {
         </div>
       </div>
 
-     
+
     </>
   );
 };

@@ -3,10 +3,29 @@ import { useNavigate } from "react-router-dom";
 import { useCartMenu } from "../../contexts/CartMenuContext";
 import { useCart } from "../../contexts/CartContext";
 
+function useCartHistory(isCartOpen, closeCart) {
+  useEffect(() => {
+    if (isCartOpen) {
+      window.history.pushState({ cartOpen: true }, "");
+      const onPopState = (e) => {
+        closeCart();
+      };
+      window.addEventListener("popstate", onPopState);
+      return () => {
+        window.removeEventListener("popstate", onPopState);
+        // Optionally, go forward if cart is closed by other means
+        // window.history.go(1);
+      };
+    }
+  }, [isCartOpen, closeCart]);
+} 
+
 const Cart = () => {
   const navigate = useNavigate();
   const { isCartOpen, cartRef, closeCartMenu } = useCartMenu();
   const { cartItems, removeFromCart, updateQuantity, getTotalPrice } = useCart();
+
+  useCartHistory(isCartOpen, closeCartMenu);
 
   // Handle overlay click
   const handleOverlayClick = (e) => {
@@ -64,6 +83,7 @@ const Cart = () => {
         <div className="close-cart" onClick={closeCartMenu}>
           &times;
         </div>
+        
         <div className="cart-content">
           <h2>Your Cart</h2>
           <div className="cart-items">

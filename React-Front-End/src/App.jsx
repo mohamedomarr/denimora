@@ -4,6 +4,7 @@ import Home from './components/Pages/home';
 import Shop from './components/Pages/shop';
 import ItemDetails from './components/Pages/itemdetails';
 import Checkout from './components/Pages/Checkout';
+import CartPage from './components/Pages/CartPage'; // We'll create this
 import MainLayout from './components/Layout/MainLayout';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
@@ -26,6 +27,7 @@ function App() {
                   <Route path="/shop" element={<Shop />} />
                   <Route path="/shop-item" element={<ItemDetails />} />
                   <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/cart" element={<CartPage />} />
                 </Routes>
               </MainLayout>
             </PopupProvider>

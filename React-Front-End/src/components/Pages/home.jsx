@@ -264,7 +264,7 @@ const Home = () => {
       <section className="about-us" id="About-Us">
         <div className="about-container">
           <div className="about-image">
-            <img src="/Assets/Shop/AboutUs.jpg" alt="About DENIMORA" />
+            <img src="/Assets/Shop/AboutUs-min.jpg" alt="About DENIMORA" />
           </div>
 
           <div className="about-content">

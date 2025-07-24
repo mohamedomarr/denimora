@@ -81,6 +81,7 @@ const ErrorNotification = () => {
     const baseStyle = {
       position: 'fixed',
       top: '80px', // Position below expired items notification
+      left: '20px',
       right: '20px',
       padding: '15px 20px',
       borderRadius: '8px',
@@ -112,7 +113,7 @@ const ErrorNotification = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div style={{ flex: 1, marginRight: '10px' }}>
           <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
-            {errorNotification.type === 'error' && '⚠️ Unable to Add Item'}
+            {errorNotification.type === 'error' && '⚠️ Failed'}
             {errorNotification.type === 'warning' && '⚠️ Warning'}
             {errorNotification.type === 'info' && 'ℹ️ Information'}
           </div>

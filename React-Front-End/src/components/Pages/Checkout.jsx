@@ -61,6 +61,7 @@ const Checkout = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderError, setOrderError] = useState(null);
+  const [orderResponse, setOrderResponse] = useState(null);
   const [errors, setErrors] = useState({
     email: "",
     phone: "",
@@ -187,19 +188,19 @@ const Checkout = () => {
       !formData.government ||
       !formData.phone
     ) {
-      setOrderError("Please fill in all required fields");
+      showErrorNotification("Please fill in all required fields");
       console.log("Form validation failed");
       return;
     }
 
     if (errors.email || errors.phone) {
-      setOrderError("Please fix the errors in the form before submitting.");
+      showErrorNotification("Please fix the errors in the form before submitting.");
       console.log("Form validation failed");
       return;
     }
 
     if (cartItems.length === 0) {
-      setOrderError(
+      showErrorNotification(
         "Your cart is empty. Please add items to your cart before placing an order."
       );
       console.log("Cart is empty");
@@ -277,6 +278,10 @@ const Checkout = () => {
 
         const response = await apiService.createOrder(orderData);
         console.log("Order created successfully:", response.data);
+        console.log("Full response object:", response);
+
+        // Store the response for display
+        setOrderResponse(response);
 
         // Store the order in localStorage as a backup
         const savedOrders = JSON.parse(localStorage.getItem("orders") || "[]");
@@ -295,10 +300,10 @@ const Checkout = () => {
         // Show success message
         setOrderSuccess(true);
 
-        // Redirect to home page after a delay
-        setTimeout(() => {
-          navigate("/");
-        }, 3000);
+        // // Redirect to home page after a delay
+        // setTimeout(() => {
+        //   navigate("/");
+        // }, 3000);
       } catch (apiError) {
         console.error("API error when creating order:", apiError);
 
@@ -315,8 +320,8 @@ const Checkout = () => {
             apiError.response.data &&
             apiError.response.data.error === "Insufficient stock"
           ) {
-            // Display the user-friendly message from the API
-            setOrderError(
+            // Show error notification instead of inline error
+            showErrorNotification(
               apiError.response.data.message ||
                 "There is not enough stock available for one or more items in your cart."
             );
@@ -368,14 +373,14 @@ const Checkout = () => {
         // Show success message (we still want to show success to the user for non-stock related errors)
         setOrderSuccess(true);
 
-        // Redirect to home page after a delay
-        setTimeout(() => {
-          navigate("/");
-        }, 3000);
+        // // Redirect to home page after a delay
+        // setTimeout(() => {
+        //   navigate("/");
+        // }, 3000);
       }
     } catch (error) {
       console.error("Error creating order:", error);
-      setOrderError("Failed to create order. Please try again.");
+      showErrorNotification("Failed to create order. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -614,14 +619,7 @@ const Checkout = () => {
             </div>
           </div>
 
-          {orderError && (
-            <div
-              className="order-error"
-              style={{ color: "red", marginBottom: "15px" }}
-            >
-              {orderError}
-            </div>
-          )}
+
 
           {orderSuccess ? (
             <div
@@ -637,8 +635,18 @@ const Checkout = () => {
             >
               <h3>Order Placed Successfully!</h3>
               <p>
-                Thank you for your order. You will be redirected to the home
-                page shortly.
+                Thank you for your order. 
+                <br />
+                {orderResponse?.data?.order_number ? (
+                  <>Your Order Number is {orderResponse.data.order_number}</>
+                ) : orderResponse?.data?.id ? (
+                  <>Your order ID is {orderResponse.data.id}</>
+                ) : (
+                  <>Your order has been placed successfully.
+                   <br />
+                   You will get an email with your order details soon.
+                   </>
+                )}
               </p>
             </div>
           ) : (
@@ -655,6 +663,7 @@ const Checkout = () => {
             </button>
           )}
         </form>
+
       </div>
     </>
   );

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useCartMenu } from "../../contexts/CartMenuContext";
 import { useCart } from "../../contexts/CartContext";
 import apiService from "../../services/api";
+import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const CartPopup = ({ 
   showPopup, 
@@ -14,6 +16,7 @@ const CartPopup = ({
   const [selectedSize, setSelectedSize] = useState('');
   const [availableSizes, setAvailableSizes] = useState([]);
   const [isLoadingSizes, setIsLoadingSizes] = useState(false);
+  const navigate = useNavigate();
 
   // Fetch available sizes when product changes
   useEffect(() => {
@@ -80,6 +83,7 @@ const CartPopup = ({
         // Add to cart using the updated async method
         await addToCart(item);
 
+
         // Show visual feedback
         const addToCartButton = document.querySelector('.popup-content .btn');
         if (addToCartButton) {
@@ -95,7 +99,11 @@ const CartPopup = ({
 
         onClose();
         setSelectedSize('');
-        openCartMenu();
+        if (window.innerWidth < 768) {
+          navigate('/cart');
+        } else {
+          openCartMenu();
+        }
         
       } catch (error) {
         console.error('Error adding to cart:', error);

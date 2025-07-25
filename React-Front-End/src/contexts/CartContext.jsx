@@ -256,12 +256,53 @@ export const CartProvider = ({ children }) => {
         }
       } catch (error) {
         console.error("Reservation failed:", error);
+        console.log("Full error response data:", error.response?.data);
+        console.log("Error type:", error.response?.data?.error);
+        console.log("Available count:", error.response?.data?.available);
+        console.log("Error message:", error.response?.data?.message);
         
         if (error.response?.data?.error === 'insufficient_stock') {
-          throw new Error('Failed to add this item ! try again in few minutes');
+          // Create detailed error message based on what info we have
+          const errorData = error.response.data;
+          const itemName = item.name || 'this item';
+          const sizeText = item.size ? ` in size "${item.size}"` : '';
+          const requestedQty = item.quantity || 1;
+          
+          // Check if this is due to reservations vs actual stock shortage
+          if (errorData.message && (
+            errorData.message.includes('reserved') || 
+            errorData.message.includes('temporarily unavailable') ||
+            errorData.message.includes('currently reserved')
+          )) {
+            // Item is currently reserved by another user
+            throw new Error('Failed to add this item! Try again in few minutes.');
+          } else if (errorData.available !== undefined) {
+            // We have available stock information
+            if (errorData.total_stock !== undefined && errorData.available === 0 && errorData.total_stock > 0) {
+              // There is total stock but 0 available - likely due to reservations
+              throw new Error('Failed to add this item! Try again in few minutes.');
+            } else {
+              // This is actual insufficient stock (requested > total available)
+              throw new Error(`Insufficient stock for "${itemName}"${sizeText}. Requested ${requestedQty}, Available ${errorData.available}.`);
+            }
+          } else {
+            // No specific stock info - check if this looks like a quantity issue
+            if (requestedQty > 1) {
+              // User requested multiple items, likely a stock issue
+              throw new Error(`Insufficient stock for "${itemName}"${sizeText}.`);
+            } else {
+              // Single item request failed, likely reservation issue
+              throw new Error('Failed to add this item! Try again in few minutes.');
+            }
+          }
         }
         
-        // Fall back to localStorage mode
+        // Check for other specific error types
+        if (error.response?.data?.error === 'item_reserved') {
+          throw new Error('Failed to add this item! Try again in few minutes.');
+        }
+        
+        // Fall back to localStorage mode for other errors
         setIsUsingAPI(false);
         console.log("Falling back to localStorage mode");
       }

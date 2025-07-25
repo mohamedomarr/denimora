@@ -175,8 +175,11 @@ const ItemDetails = () => {
       // Await addToCart in case it's async
       await addToCart(item);
 
-      // Now open the cart menu
-      openCartMenu();
+      if (window.innerWidth < 768) {
+        navigate('/cart');
+      } else {
+        openCartMenu();
+      }
 
       // Show visual feedback
       const addToCartButton = document.querySelector('.add-to-cart button');
@@ -195,15 +198,19 @@ const ItemDetails = () => {
       console.error('Error adding to cart:', error);
 
       // Show different notification types based on error message
-      if (error.message?.includes('try again in few minutes')) {
+      if (error.message?.includes('Try again in few minutes')) {
+        // Item is reserved by another user - show warning
         showErrorNotification(error.message, 'warning');
+      } else if (error.message?.includes('Insufficient stock')) {
+        // Insufficient stock - show as error
+        showErrorNotification(error.message, 'error');
       } else if (error.message?.includes('out of stock')) {
-        showErrorNotification(error.message, 'warning');
+        // Generic out of stock - show as error
+        showErrorNotification(error.message, 'error');
       } else {
+        // Other errors - show as error
         showErrorNotification(error.message || 'Failed to add item to cart. Please try again.', 'error');
       }
-
-
     }
   };
 
@@ -299,7 +306,7 @@ const ItemDetails = () => {
 
             <div className="size-selection">
               <div className="size-btns">
-                {itemData.sizes && itemData.sizes.length > 0  && availableSizes.length > 0 ? (
+                {itemData.sizes && itemData.sizes.length > 0 && availableSizes.length > 0 ? (
                   // Show all sizes, but disable unavailable ones
                   itemData.sizes.map((sizeObj) => {
                     const isAvailable = availableSizes.some(

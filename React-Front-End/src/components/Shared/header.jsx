@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useMobileMenu } from "../../contexts/MobileMenuContext";
 import { useCartMenu } from "../../contexts/CartMenuContext";
 import { useCart } from "../../contexts/CartContext";
+
 import "../../CSS/bootstrap.css";
 import "../../CSS/Styles.css";
 
@@ -71,16 +72,9 @@ const Header = () => {
           >
             About Us
           </a>
-          <a
-            className="nav-link"
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              handleSectionNavigation('Contact-Us');
-            }}
-          >
+          <Link className="nav-link" to="/contact">
             Contact Us
-          </a>
+          </Link>
         </nav>
       </div>
 

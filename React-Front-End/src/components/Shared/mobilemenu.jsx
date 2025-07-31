@@ -93,15 +93,9 @@ const MobileMenu = () => {
           >
             About Us
           </a>
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              handleSectionNavigation("Contact-Us");
-            }}
-          >
+          <Link to="/contact" onClick={closeMobileMenu}>
             Contact Us
-          </a>
+          </Link>
         </nav>
       </div>
     </div>

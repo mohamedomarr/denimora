@@ -41,6 +41,7 @@ body {
     position: absolute;
     top: 0;
     left: 0;
+    padding-top: 5rem;
     width: 100%;
     height: 100%;
     background-image: url(/public/Assets/Shop/Landing-Bg-min.jpg);
@@ -277,11 +278,180 @@ header .shop-page-icons div:hover {
     color: var(--Site-Bg--);
 }
 
+
+/* About Us Page Styling - Customer Service Style */
+.about-us-page {
+    min-height: 100vh;
+    padding-top: 5rem;
+    padding-bottom: 3rem;
+    background-color: var(--Site-Bg--);
+}
+
+.about-page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    margin-top: 2.5rem;
+}
+
+.about-page-header {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.about-page-header h1 {
+    font-size: 2.5rem;
+    color: var(--text-color--);
+    font-weight: 600;
+    margin: 0;
+}
+
+.about-page-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: start;
+}
+
+.about-page-image-section {
+    position: relative;
+    overflow: hidden;
+    border-radius: 15px;
+}
+
+.about-page-image-section img {
+    width: 100%;
+    max-width: 500px;
+    border-radius: 15px;
+}
+
+.about-page-text-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+}
+
+.about-section {
+    text-align: left;
+}
+
+.about-section h2 {
+    position: relative;
+    padding-bottom: 0.5rem;
+    color: var(--text-color--);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    line-height: 1.3;
+}
+
+.about-section h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background: var(--text-color--);
+    border-radius: 2px;
+}
+
+.about-section p {
+    text-align: justify;
+    line-height: 1.9;
+    margin-bottom: 2rem;
+    font-weight: 400;
+    color: var(--text-color--);
+    font-size: 1.2rem;
+}
+
+.about-section span {
+    background: var(--text-color--);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+}
+
+/* Responsive Design for About Us Page */
+@media (max-width: 768px) {
+    .about-us-page {
+        padding-top: 6rem;
+        padding-inline: 1rem;
+    }
+    
+    .about-page-container {
+        padding: 0 1rem;
+        margin-top: 0;
+    }
+
+    
+    
+    .about-page-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .about-page-image-section {
+        order: -1;
+        margin-bottom: 2rem;
+    }
+    
+    .about-page-image-section img {
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto;
+        display: block;
+    }
+    
+    .about-page-header h1 {
+        font-size: 2rem;
+    }
+    
+    .about-section h2 {
+        font-size: 1.3rem;
+        text-align: center;
+    }
+    
+    .about-section h2::after {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    
+    .about-section p {
+        font-size: 1.1rem;
+        text-align: left;
+    }
+}
+
+@media (max-width: 480px) {
+    .about-us-page {
+        padding-top: 6rem;
+    }
+    
+    .about-page-header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .about-section h2 {
+        font-size: 1.2rem;
+    }
+    
+    .about-section p {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+}
+
 /*Shop Styling*/
 .shop-section {
     padding: 2rem;
     text-align: center;
-    margin-top: 6rem;
+}
+
+/* Shop Page Specific Styling */
+.shop-page-section {
+    margin-top: 5rem;
 }
 
 .section-title h2,
@@ -476,22 +646,7 @@ p {
     padding: 4rem;
 }
 
-.Contact-Us::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url(/public/Assets/Shop/Contact-Us-min.jpg);
-    background-attachment: fixed;
-    background-size: cover;
-    background-position: center;
-    filter: blur(2px);
-    z-index: -1;
-    background-color: rgba(0, 0, 0, 0.3);
-    background-blend-mode: overlay;
-}
+
 
 .Contact-Us>* {
     position: relative;
@@ -509,7 +664,7 @@ p {
     display: flex;
     align-items: center;
     width: 40%;
-    background-color: white;
+    background-color: var(--text-color--);
     border-radius: 40px 0 0 40px;
 }
 
@@ -539,7 +694,7 @@ p {
 
 .Contact-Content .text-bg .Text p {
     text-align: center;
-    color: var(--text-color--);
+    color: var(--Site-Bg--);
 }
 
 .contact-form {
@@ -641,66 +796,610 @@ p {
 
 /*Footer Styling*/
 .footer {
-    background-color: var(--Site-Bg--);
+    background-color: var(--text-color--);
     color: var(--Gold--);
     padding: 3rem 2rem;
 }
 
 .footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer-main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    margin-bottom: 2rem;
+}
+
+/* Brand Section */
+.footer-brand {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
+    align-items: flex-start;
 }
 
 .footer-logo {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding-bottom: 1rem;
-}
-
-.footer-logo img {
-    width: 50%;
-    height: 50%;
-}
-
-.footer-links {
-    margin: 1.5rem 0;
-}
-
-.footer-links a {
-    margin: 0 1rem;
-    color: var(--text-color--);
-    font-size: 1.2rem;
-    transition: color 0.3s ease-in-out;
-}
-
-.footer-links a:hover {
-    color: var(--Gold--);
-    text-decoration: none;
-}
-
-.footer-socials {
     margin-bottom: 1.5rem;
 }
 
-.footer-socials a {
-    font-size: 1.5rem;
-    margin: 0 .5rem;
-    color: var(--text-color--);
-    transition: color 0.3s ease-in-out;
+.footer-logo img {
+    width: 200px;
+    height: auto;
+    max-width: 100%;
 }
 
-.footer-socials a:hover {
-    color: var(--Gold--);
+.footer-description {
+    color: var(--Site-Bg--);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    max-width: 400px;
+}
+
+.footer-socials {
+    display: flex;
+    gap: 1rem;
+}
+
+.footer-socials a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: transparent;
+    border: 2px solid var(--Site-Bg--);
+    border-radius: 50%;
+    color: var(--Site-Bg--);
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
     text-decoration: none;
 }
 
+.footer-socials a:hover {
+    background-color: var(--Site-Bg--);
+    color: var(--Gold--);
+}
+
+/* Customer Service Section */
+.footer-customer-service {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    bottom: 0;
+}
+
+.footer-customer-service h3 {
+    color: var(--Site-Bg--);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    
+}
+
+.customer-service-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.customer-service-links a {
+    color: var(--Site-Bg--);
+    font-size: 1rem;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    line-height: 1.4;
+}
+
+.customer-service-links a:hover {
+    color: var(--Gold--);
+}
+
+/* Footer Bottom */
+.footer-bottom {
+    border-top: 1px solid var(--Site-Bg--);
+    padding-top: 1rem;
+    text-align: center;
+}
+
 .footer-credit {
-    color: var(--text-color--);
+    color: var(--Site-Bg--);
     font-size: 0.9rem;
+    margin: 0;
+}
+
+.footer-credit span {
+    font-weight: 600;
+}
+
+/* Contact Us Page Styling */
+.contact-us-page {
+    min-height: 100vh;
+    padding-top: 5rem;
+    padding-bottom: 3rem;
+    background-color: var(--Site-Bg--);
+}
+
+.contact-page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    margin-top: 2.5rem;
+}
+
+.contact-page-header {
+    text-align: center;
+    margin-bottom: 6rem;
+}
+
+.contact-page-header h1 {
+    font-size: 2.5rem;
+    color: var(--text-color--);
+    font-weight: 600;
+    margin: 0;
+}
+
+.contact-page-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: start;
+}
+
+/* Contact Information Section */
+.contact-page-info-section h2 {
+    font-size: 1.8rem;
+    color: var(--text-color--);
+    font-weight: 600;
+    margin-bottom: 2rem;
+}
+
+.contact-page-details {
+    margin-bottom: 2.5rem;
+}
+
+.contact-page-item {
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.contact-page-label {
+    font-weight: 600;
+    color: var(--text-color--);
+    font-size: 1rem;
+    min-width: 70px;
+}
+
+.contact-page-link {
+    color: var(--text-color--);
+    text-decoration: underline;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+}
+
+.contact-page-link:hover {
+    color: var(--Gold--);
+    text-decoration: underline;
+}
+
+.contact-page-text {
+    color: var(--text-color--);
+    font-size: 1rem;
+}
+
+.contact-page-socials {
+    display: flex;
+    gap: 1rem;
+}
+
+.contact-page-social-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: var(--text-color--);
+    color: white;
+    border-radius: 10rem;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.contact-page-social-icon:hover {
+    background-color: var(--Gold--);
+    color: var(--text-color--);
+    text-decoration: none;
+}
+
+/* Contact Form Section */
+.contact-page-form-section h2 {
+    font-size: 1.8rem;
+    color: var(--text-color--);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+.contact-page-form {
+    width: 100%;
+}
+
+.contact-page-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.contact-page-form-group {
+    margin-bottom: 1rem;
+}
+
+.contact-page-form-input,
+.contact-page-form-textarea {
+    width: 100%;
+    padding: 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-family: 'Montserrat', sans-serif;
+    background-color: #f8f9fa;
+    color: var(--text-color--);
+    transition: border-color 0.3s ease;
+}
+
+.contact-page-form-input:focus,
+.contact-page-form-textarea:focus {
+    outline: none;
+    border-color: var(--Gold--);
+    background-color: white;
+}
+
+.contact-page-form-input::placeholder,
+.contact-page-form-textarea::placeholder {
+    color: #999;
+    font-size: 1rem;
+}
+
+.contact-page-form-textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.contact-page-send-button {
+    background-color: var(--text-color--);
+    color: white;
+    border: none;
+    padding: 1rem 3rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Montserrat', sans-serif;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.contact-page-send-button:hover {
+    background-color: var(--Gold--);
+    color: var(--text-color--);
+}
+
+/* Shipping & Delivery Page Styling */
+.shipping-delivery-page {
+    min-height: 100vh;
+    padding-top: 5rem;
+    padding-bottom: 3rem;
+    background-color: var(--Site-Bg--);
+}
+
+.shipping-page-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    margin-top: 2.5rem;
+}
+
+.shipping-page-header {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.shipping-page-header h1 {
+    font-size: 2.5rem;
+    color: var(--text-color--);
+    font-weight: 600;
+    margin: 0;
+}
+
+.shipping-page-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+}
+
+.shipping-section {
+    text-align: left;
+}
+
+.shipping-section h2 {
+    font-size: 1.5rem;
+    color: var(--text-color--);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    line-height: 1.3;
+}
+
+.shipping-section p {
+    color: var(--text-color--);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.shipping-section p strong {
+    font-weight: 700;
+    color: var(--text-color--);
+}
+
+.shipping-email-link {
+    color: var(--text-color--);
+    text-decoration: underline;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.shipping-email-link:hover {
+    color: var(--Gold--);
+    text-decoration: underline;
+}
+
+/* Privacy Policy Page Styling */
+.privacy-policy-page {
+    min-height: 100vh;
+    padding-top: 5rem;
+    padding-bottom: 3rem;
+    background-color: var(--Site-Bg--);
+}
+
+.privacy-page-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    margin-top: 2.5rem;
+}
+
+.privacy-page-header {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.privacy-page-header h1 {
+    font-size: 2.5rem;
+    color: var(--text-color--);
+    font-weight: 600;
+    margin: 0;
+}
+
+.privacy-page-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+}
+
+.privacy-section {
+    text-align: left;
+}
+
+.privacy-section h2 {
+    font-size: 1.5rem;
+    color: var(--text-color--);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    line-height: 1.3;
+}
+
+.privacy-section p {
+    color: var(--text-color--);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.privacy-section p:last-child {
+    margin-bottom: 0;
+}
+
+.privacy-list {
+    color: var(--text-color--);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.privacy-list li {
+    margin-bottom: 0.5rem;
+}
+
+.privacy-list li:last-child {
+    margin-bottom: 0;
+}
+
+/* Returns & Exchanges Page Styling */
+.returns-exchanges-page {
+    min-height: 100vh;
+    padding-top: 5rem;
+    padding-bottom: 3rem;
+    background-color: var(--Site-Bg--);
+}
+
+.returns-page-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    margin-top: 2.5rem;
+}
+
+.returns-page-header {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.returns-page-header h1 {
+    font-size: 2.5rem;
+    color: var(--text-color--);
+    font-weight: 600;
+    margin: 0;
+}
+
+.returns-page-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+}
+
+.returns-section {
+    text-align: left;
+}
+
+.returns-section h2 {
+    font-size: 1.5rem;
+    color: var(--text-color--);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    line-height: 1.3;
+}
+
+.returns-section p {
+    color: var(--text-color--);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.returns-section p:last-child {
+    margin-bottom: 0;
+}
+
+.returns-section p strong {
+    font-weight: 700;
+    color: var(--text-color--);
+}
+
+.returns-list {
+    color: var(--text-color--);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.returns-list li {
+    margin-bottom: 0.5rem;
+}
+
+.returns-list li:last-child {
+    margin-bottom: 0;
+}
+
+.returns-list li strong {
+    font-weight: 700;
+    color: var(--text-color--);
+}
+
+.returns-email-link,
+.returns-phone-link {
+    color: var(--text-color--);
+    text-decoration: underline;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.returns-email-link:hover,
+.returns-phone-link:hover {
+    color: var(--Gold--);
+    text-decoration: underline;
+}
+
+/* Terms & Conditions Page Styling */
+.terms-conditions-page {
+    min-height: 100vh;
+    padding-top: 5rem;
+    padding-bottom: 3rem;
+    background-color: var(--Site-Bg--);
+}
+
+.terms-page-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    margin-top: 2.5rem;
+}
+
+.terms-page-header {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.terms-page-header h1 {
+    font-size: 2.5rem;
+    color: var(--text-color--);
+    font-weight: 600;
+    margin: 0;
+}
+
+.terms-page-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+}
+
+.terms-section {
+    text-align: left;
+}
+
+.terms-section h2 {
+    font-size: 1.5rem;
+    color: var(--text-color--);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    line-height: 1.3;
+}
+
+.terms-section p {
+    color: var(--text-color--);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.terms-section p:last-child {
+    margin-bottom: 0;
+}
+
+.terms-section p strong {
+    font-weight: 700;
+    color: var(--text-color--);
+}
+
+.terms-email-link,
+.terms-phone-link {
+    color: var(--text-color--);
+    text-decoration: underline;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.terms-email-link:hover,
+.terms-phone-link:hover {
+    color: var(--Gold--);
+    text-decoration: underline;
 }
 
 /*Shop-Item Page Styling*/
@@ -712,6 +1411,7 @@ p {
     border-radius: 10px;
     max-width: 87%;
     margin-top: 7rem;
+    margin-bottom: 5rem;
     margin-inline: auto;
     padding: 2rem;
 }
@@ -2056,6 +2756,234 @@ p {
     .side-bar-size-chart-container img:last-child {
         min-width: 70%;
     }
+
+    /* Footer Mobile Styles */
+    .footer-main {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+        text-align: center;
+    }
+
+    .footer-brand {
+        align-items: center;
+        text-align: center;
+    }
+
+    .footer-logo img {
+        width: 150px;
+    }
+
+    .footer-description {
+        text-align: center;
+        max-width: none;
+        margin-bottom: 1.5rem;
+    }
+
+    .footer-socials {
+        justify-content: center;
+    }
+
+    .footer-customer-service {
+        align-items: center;
+        text-align: center;
+    }
+
+    .footer-customer-service h3 {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+    }
+
+    .customer-service-links {
+        gap: 0.6rem;
+    }
+
+         .customer-service-links a {
+         font-size: 0.95rem;
+     }
+
+     /* Contact Page Mobile Styles */
+     .contact-us-page {
+         padding-top: 4rem;
+     }
+
+     .contact-page-container {
+         padding: 0 1rem;
+     }
+
+     .contact-page-header h1 {
+         font-size: 2rem;
+     }
+
+     .contact-page-content {
+         grid-template-columns: 1fr;
+         gap: 2.5rem;
+         text-align: center;
+     }
+
+     .contact-page-info-section h2,
+     .contact-page-form-section h2 {
+         font-size: 1.5rem;
+     }
+
+     .contact-page-item {
+         justify-content: center;
+         text-align: center;
+     }
+
+     .contact-page-socials {
+         justify-content: center;
+     }
+
+     .contact-page-form-row {
+         grid-template-columns: 1fr;
+         gap: 1rem;
+     }
+
+     .contact-page-form-input,
+     .contact-page-form-textarea {
+         padding: 0.8rem;
+         font-size: 0.95rem;
+     }
+
+     /* Shipping Page Mobile Styles */
+     .shipping-delivery-page {
+         padding-top: 6rem;
+     }
+
+     .shipping-page-container {
+         padding: 0 1rem;
+         margin-top: 1.5rem;
+     }
+
+     .shipping-page-header {
+         margin-bottom: 3rem;
+     }
+
+     .shipping-page-header h1 {
+         font-size: 2rem;
+     }
+
+     .shipping-page-content {
+         gap: 2rem;
+     }
+
+     .shipping-section h2 {
+         font-size: 1.3rem;
+         margin-bottom: 0.8rem;
+     }
+
+     .shipping-section p {
+         font-size: 0.95rem;
+         line-height: 1.5;
+     }
+
+     /* Privacy Policy Page Mobile Styles */
+     .privacy-policy-page {
+         padding-top: 6rem;
+     }
+
+     .privacy-page-container {
+         padding: 0 1rem;
+         margin-top: 1.5rem;
+     }
+
+     .privacy-page-header {
+         margin-bottom: 3rem;
+     }
+
+     .privacy-page-header h1 {
+         font-size: 2rem;
+     }
+
+     .privacy-page-content {
+         gap: 2rem;
+     }
+
+     .privacy-section h2 {
+         font-size: 1.3rem;
+         margin-bottom: 0.8rem;
+     }
+
+     .privacy-section p {
+         font-size: 0.95rem;
+         line-height: 1.5;
+     }
+
+     .privacy-list {
+         font-size: 0.95rem;
+         line-height: 1.5;
+         padding-left: 1.2rem;
+     }
+
+     /* Returns & Exchanges Page Mobile Styles */
+     .returns-exchanges-page {
+         padding-top: 6rem;
+     }
+
+     .returns-page-container {
+         padding: 0 1rem;
+         margin-top: 1.5rem;
+     }
+
+     .returns-page-header {
+         margin-bottom: 3rem;
+     }
+
+     .returns-page-header h1 {
+         font-size: 2rem;
+     }
+
+     .returns-page-content {
+         gap: 2rem;
+     }
+
+     .returns-section h2 {
+         font-size: 1.3rem;
+         margin-bottom: 0.8rem;
+     }
+
+     .returns-section p {
+         font-size: 0.95rem;
+         line-height: 1.5;
+     }
+
+     .returns-list {
+         font-size: 0.95rem;
+         line-height: 1.5;
+         padding-left: 1.2rem;
+     }
+
+     /* Terms & Conditions Page Mobile Styles */
+     .terms-conditions-page {
+         padding-top: 6rem;
+     }
+
+     .terms-page-container {
+         padding: 0 1rem;
+         margin-top: 1.5rem;
+     }
+
+     .terms-page-header {
+         margin-bottom: 3rem;
+     }
+
+     .terms-page-header h1 {
+         font-size: 2rem;
+     }
+
+     .terms-page-content {
+         gap: 2rem;
+     }
+
+     .terms-section h2 {
+         font-size: 1.3rem;
+         margin-bottom: 0.8rem;
+     }
+
+     .terms-section p {
+         font-size: 0.95rem;
+         line-height: 1.5;
+     }
 
 
 }

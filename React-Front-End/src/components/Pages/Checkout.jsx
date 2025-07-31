@@ -73,6 +73,11 @@ const Checkout = () => {
   const subtotal = getTotalPrice();
   const total = subtotal + shippingFee; // Use dynamic shipping fee
 
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // NEW: Function to fetch shipping cost
   const fetchShippingCost = async (governorate) => {
     if (!governorate) {

@@ -38,6 +38,11 @@ const Home = () => {
   const [isLoadingBest, setIsLoadingBest] = useState(true);
   const [bestError, setBestError] = useState(null);
 
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Handle navigation to product details
   const handleProductClick = (product) => {
     navigate(`/shop-item?id=${product.id}&slug=${product.slug}`);
@@ -323,7 +328,7 @@ const Home = () => {
       </section>
 
       {/* Contact Us Section */}
-      <section className="Contact-Us" id="Contact-Us">
+      <section className="Contact-Us" id="Contact-Us" style={{display: "none"}}>
         <div className="section-title">
           <h2>Get In Touch</h2>
         </div>

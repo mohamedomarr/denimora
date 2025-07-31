@@ -80,6 +80,11 @@ const Shop = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [isUsingFallbackData, setIsUsingFallbackData] = useState(false);
 
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Fetch products and categories
   useEffect(() => {
     const fetchData = async () => {
@@ -166,7 +171,7 @@ const Shop = () => {
       {error && <div className="error-banner">{error}</div>}
 
       {/* Shop Section */}
-      <section className="shop-section">
+      <section className="shop-section shop-page-section">
         <div className="Shop-section-title">
           <h2>Our Collection</h2>
           {isUsingFallbackData && (
@@ -212,7 +217,7 @@ const Shop = () => {
           )}
         </div>
       </section>
-      
+
     </>
   );
 };

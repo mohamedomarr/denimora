@@ -35,6 +35,12 @@ const ItemDetails = () => {
   const productPrice = searchParams.get('price');
   const productImage = searchParams.get('image');
 
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Effect to fetch product data from API or URL parameters
   useEffect(() => {
     const fetchProductData = async () => {

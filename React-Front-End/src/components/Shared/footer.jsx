@@ -4,6 +4,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 const Footer = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const logoSrc = '/Assets/Logos&Icons/Footer-Logo.svg' ;
 
   // Determine if we're on the home page
   const isHome = location.pathname === '/';
@@ -25,54 +26,68 @@ const Footer = () => {
   return (
     <section className="footer">
       <div className="footer-container">
-        <div className="footer-logo">
-          <img
-            src="/Assets/Logos&Icons/denimora-logo-WhiteBg.svg"
-            alt="Denimora Logo"
-          />
+        
+        {/* Main Footer Content */}
+        <div className="footer-main">
+          
+          {/* Brand Section */}
+          <div className="footer-brand">
+            <div className="footer-logo">
+              <img
+                src={logoSrc}
+                alt="Denimora Logo"
+              />
+            </div>
+            
+            <p className="footer-description">
+              Denimora is a premium denim brand dedicated to creating elegant, 
+              comfortable, & versatile jeans for people with refined taste.
+            </p>
+            
+            <div className="footer-socials">
+              <a
+                href="https://www.facebook.com/share/1P42RQpVK6/?mibextid=wwXIfr"
+                className="fab fa-facebook-f"
+                target="_blank"
+                rel="noopener noreferrer"
+              ></a>
+              <a
+                href="https://www.instagram.com/denimoraa.co"
+                className="fab fa-instagram"
+                target="_blank"
+                rel="noopener noreferrer"
+              ></a>
+              <a 
+                href="https://www.tiktok.com/@denimora25?_t=ZS-8wqteSQA6lz&_r=1" 
+                className="fab fa-tiktok"
+                target="_blank"
+                rel="noopener noreferrer"
+              ></a>
+            </div>
+          </div>
+
+          {/* Customer Service Section */}
+          <div className="footer-customer-service">
+            <h3>Customer Service</h3>
+            <div className="customer-service-links">
+              <Link to="/aboutus">About us</Link>
+              <Link to="/contact">Contact us</Link>
+              <Link to="/shipping-delivery">Shipping & Delivery</Link>
+              <Link to="/privacy-policy">Privacy Policy</Link>
+              <Link to="/returns-exchanges">Returns & Exchanges</Link>
+              <Link to="/terms-conditions">Terms of Service</Link>
+            </div>
+          </div>
+
         </div>
 
-        <div className="footer-links">
-          <Link to="/">Home</Link>
-          <Link to="/shop">Shop</Link>
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              handleSectionNavigation("About-Us");
-            }}
-          >
-            About
-          </a>
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              handleSectionNavigation("Contact-Us");
-            }}
-          >
-            Contact
-          </a>
+        {/* Footer Credit */}
+        <div className="footer-bottom">
+          <p className="footer-credit">
+            © <span>DENIMORA</span>
+          </p>
         </div>
 
-        <div className="footer-socials">
-          <a
-            href="https://www.facebook.com/share/1P42RQpVK6/?mibextid=wwXIfr"
-            className="fab fa-facebook-f"
-          ></a>
-          <a
-            href="https://www.instagram.com/denimoraa.co"
-            className="fab fa-instagram"
-          ></a>
-          <a 
-            href="https://www.tiktok.com/@denimora25?_t=ZS-8wqteSQA6lz&_r=1" 
-            className="fab fa-tiktok"
-          ></a>
-        </div>
-
-        <p className="footer-credit">
-          © <span>DENIMORA</span>
-        </p>
       </div>
     </section>
   );

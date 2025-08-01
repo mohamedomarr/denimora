@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useSizeChart } from '../../hooks/useSizeChart';
 import { useCartMenu } from "../../contexts/CartMenuContext";
@@ -24,12 +24,18 @@ const ItemDetails = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [availableSizes, setAvailableSizes] = useState([]);
+  // Image modal state
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [modalImageIndex, setModalImageIndex] = useState(0);
   // Embla Carousel states
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [thumbEmblaRef, thumbEmblaApi] = useEmblaCarousel({ containScroll: 'keepSnaps', dragFree: true });
   const [selectedIndex, setSelectedIndex] = useState(0);
   const productId = searchParams.get('id');
   const productSlug = searchParams.get('slug');
+  // Touch/swipe support for modal
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
   // Keep these for backward (Fallback) compatibility
   const productName = searchParams.get('name');
   const productPrice = searchParams.get('price');
@@ -235,8 +241,106 @@ const ItemDetails = () => {
     if (emblaApi) emblaApi.scrollTo(idx);
   };
 
-  if (isLoading) return <div className="loading">Loading product details...</div>;
-  if (error && !itemData) return <div className="error">{error}</div>;
+  // Handle image modal
+  const openImageModal = (imageIndex = selectedIndex) => {
+    setModalImageIndex(imageIndex);
+    setIsImageModalOpen(true);
+    document.body.style.overflow = 'hidden'; // Prevent body scroll
+  };
+
+  const closeImageModal = () => {
+    setIsImageModalOpen(false);
+    document.body.style.overflow = 'unset'; // Restore body scroll
+    // Sync main carousel with modal when closing
+    if (emblaApi && typeof modalImageIndex === 'number' && modalImageIndex !== selectedIndex) {
+      emblaApi.scrollTo(modalImageIndex);
+    }
+  };
+
+  // Modal navigation functions
+  const goToPreviousImage = useCallback(() => {
+    if (itemData && itemData.detail_images && itemData.detail_images.length > 0) {
+      setModalImageIndex((prev) => 
+        prev === 0 ? itemData.detail_images.length - 1 : prev - 1
+      );
+    }
+  }, [itemData]);
+
+  const goToNextImage = useCallback(() => {
+    if (itemData && itemData.detail_images && itemData.detail_images.length > 0) {
+      setModalImageIndex((prev) => 
+        prev === itemData.detail_images.length - 1 ? 0 : prev + 1
+      );
+    }
+  }, [itemData]);
+
+  // Handle main image click
+  const handleMainImageClick = () => {
+    if (itemData && itemData.detail_images && itemData.detail_images.length > 0) {
+      openImageModal(selectedIndex);
+    }
+  };
+
+  const handleTouchStart = useCallback((e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  }, []);
+
+  const handleTouchMove = useCallback((e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      goToNextImage();
+    } else if (isRightSwipe) {
+      goToPreviousImage();
+    }
+  }, [touchStart, touchEnd, goToNextImage, goToPreviousImage]);
+
+  // Keyboard navigation for modal
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (isImageModalOpen) {
+        if (e.key === 'ArrowLeft') {
+          goToPreviousImage();
+        } else if (e.key === 'ArrowRight') {
+          goToNextImage();
+        } else if (e.key === 'Escape') {
+          closeImageModal();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyPress);
+    return () => document.removeEventListener('keydown', handleKeyPress);
+  }, [isImageModalOpen, goToPreviousImage, goToNextImage]);
+
+  
+  if (isLoading) return (
+    <div className="page-loading-container">
+      <div className="page-loading-content">
+        <div className="loading-spinner"></div>
+        <h3>Loading {itemData?.name} details...</h3>
+        <p>Please wait while we prepare your product information</p>
+      </div>
+    </div>
+  );
+  if (error && !itemData) return (
+    <div className="page-loading-container">
+      <div className="page-loading-content">
+        <div className="error-icon">⚠️</div>
+        <h3>Something went wrong</h3>
+        <p>{error}</p>
+      </div>
+    </div>
+  );
   if (!itemData) return null;
 
   return (
@@ -246,7 +350,7 @@ const ItemDetails = () => {
       {/* Shop Item Section */}
       <section className="shop-item-container">
         <div className="shop-item-img">
-          {itemData.detail_images && itemData.detail_images.length > 0 ? (
+          {itemData && itemData.detail_images && itemData.detail_images.length > 0 ? (
             <>
               <div className="embla" ref={emblaRef}>
                 <div className="embla__container">
@@ -255,8 +359,10 @@ const ItemDetails = () => {
                       <img
                         src={img.image_url}
                         alt={img.alt_text || itemData.name}
-                        className="slider-main-img"
-                        style={{ width: '100%', borderRadius: 8 }}
+                        className="slider-main-img clickable-image"
+                        style={{ width: '100%', borderRadius: 8, cursor: 'pointer' }}
+                        onClick={handleMainImageClick}
+                        title="Click to view larger image"
                       />
                     </div>
                   ))}
@@ -282,25 +388,27 @@ const ItemDetails = () => {
                 </div>
               </div>
             </>
-          ) : (
+          ) : itemData ? (
             <img
-              src={itemData.image}
-              alt={itemData.name}
+              src={itemData?.image}
+              alt={itemData?.name}
               id="productImage"
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = '/Assets/Shop/placeholder.jpg';
               }}
             />
+          ) : (
+            <div className="loading">Loading images...</div>
           )}
         </div>
 
         <div className="shop-item-content">
           <div className="content-text">
-            <h3 id="productName">{itemData.name}</h3>
+            <h3 id="productName">{itemData?.name || 'Loading...'}</h3>
             <h3>LE {basePrice.toFixed(2)}</h3>
             <p>
-              {itemData.description || `100% cotton of softness and does not contain polyester and elastin,
+              {itemData?.description || `100% cotton of softness and does not contain polyester and elastin,
                 High quality due to the methods of fabric and treatment,
                 High density fabric (From 12 To 14) ounces for each one,
                 Which means a distinctive appearance,
@@ -312,7 +420,7 @@ const ItemDetails = () => {
 
             <div className="size-selection">
               <div className="size-btns">
-                {itemData.sizes && itemData.sizes.length > 0 && availableSizes.length > 0 ? (
+                {itemData?.sizes && itemData.sizes.length > 0 && availableSizes.length > 0 ? (
                   // Show all sizes, but disable unavailable ones
                   itemData.sizes.map((sizeObj) => {
                     const isAvailable = availableSizes.some(
@@ -441,6 +549,49 @@ const ItemDetails = () => {
         </div>
       </div>
 
+      {/* Image Modal */}
+      {isImageModalOpen && itemData && itemData.detail_images && (
+        <div className="image-modal-overlay" onClick={closeImageModal}>
+          <div 
+            className="image-modal-content" 
+            onClick={(e) => e.stopPropagation()}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            <button className="image-modal-close" onClick={closeImageModal}>
+              &times;
+            </button>
+            
+            {/* Previous Button */}
+            {itemData.detail_images.length > 1 && (
+              <button className="image-modal-nav image-modal-prev" onClick={goToPreviousImage}>
+                <i className="fas fa-chevron-left"></i>
+              </button>
+            )}
+            
+            {/* Next Button */}
+            {itemData.detail_images.length > 1 && (
+              <button className="image-modal-nav image-modal-next" onClick={goToNextImage}>
+                <i className="fas fa-chevron-right"></i>
+              </button>
+            )}
+            
+            <img 
+              src={itemData.detail_images[modalImageIndex]?.image_url} 
+              alt={itemData.detail_images[modalImageIndex]?.alt_text || itemData?.name}
+              className="image-modal-img"
+            />
+            
+            {/* Image Counter */}
+            {itemData.detail_images.length > 1 && (
+              <div className="image-modal-counter">
+                {modalImageIndex + 1} / {itemData.detail_images.length}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
     </>
   );

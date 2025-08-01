@@ -163,7 +163,15 @@ const Shop = () => {
   };
 
   if (isLoading) {
-    return <div className="loading">Loading products...</div>;
+    return (
+      <div className="page-loading-container">
+        <div className="page-loading-content">
+          <div className="loading-spinner"></div>
+          <h3>Loading products...</h3>
+          <p>Please wait while loading the latest collection</p>
+        </div>
+      </div>
+    );
   }
 
   return (

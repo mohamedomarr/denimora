@@ -1,13 +1,21 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 
 const Footer = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const logoSrc = '/Assets/Logos&Icons/Footer-Logo.svg' ;
+  
+  // State for collapsible Customer Service section on mobile
+  const [isCustomerServiceOpen, setIsCustomerServiceOpen] = useState(false);
 
   // Determine if we're on the home page
   const isHome = location.pathname === '/';
+
+  // Toggle Customer Service section on mobile
+  const toggleCustomerService = () => {
+    setIsCustomerServiceOpen(!isCustomerServiceOpen);
+  };
 
   // Handle section navigation
   const handleSectionNavigation = (sectionId) => {
@@ -40,8 +48,7 @@ const Footer = () => {
             </div>
             
             <p className="footer-description">
-              Denimora is a premium denim brand dedicated to creating elegant, 
-              comfortable, & versatile jeans for people with refined taste.
+              Denimora is a premium denim brand dedicated to creating elegant, comfortable and versatile jeans for people with refined taste. 
             </p>
             
             <div className="footer-socials">
@@ -66,10 +73,16 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Customer Service Section */}
+          {/* Customer Service Section - Collapsible on Mobile */}
           <div className="footer-customer-service">
-            <h3>Customer Service</h3>
-            <div className="customer-service-links">
+            <h3 
+              className="customer-service-header"
+              onClick={toggleCustomerService}
+            >
+              Customer Service
+              <i className={`fas fa-chevron-down customer-service-arrow ${isCustomerServiceOpen ? 'open' : ''}`}></i>
+            </h3>
+            <div className={`customer-service-links ${isCustomerServiceOpen ? 'open' : ''}`}>
               <Link to="/aboutus">About us</Link>
               <Link to="/contact">Contact us</Link>
               <Link to="/shipping-delivery">Shipping & Delivery</Link>

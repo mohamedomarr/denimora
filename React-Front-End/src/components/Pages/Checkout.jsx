@@ -4,6 +4,7 @@ import { useCart } from "../../contexts/CartContext";
 import { useCartMenu } from "../../contexts/CartMenuContext";
 import { useMobileMenu } from "../../contexts/MobileMenuContext";
 import apiService from "../../services/api";
+import facebookPixel from '../../services/facebookPixel';
 import Header from "../Shared/header";
 import Footer from "../Shared/footer";
 import Cart from "../Shared/cart";
@@ -235,6 +236,9 @@ const Checkout = () => {
 
       console.log("Cart validation passed, proceeding with order");
 
+      // Track Facebook Pixel InitiateCheckout event
+      facebookPixel.trackInitiateCheckout(cartItems, total);
+
       console.log("Preparing order data...");
 
       // Format the order data to match Django backend expectations
@@ -287,6 +291,13 @@ const Checkout = () => {
 
         // Store the response for display
         setOrderResponse(response);
+
+        // Track Facebook Pixel Purchase event
+        facebookPixel.trackPurchase({
+          items: cartItems,
+          total: total,
+          orderId: response.data.id || response.data.order_number || Date.now()
+        });
 
         // Store the order in localStorage as a backup
         const savedOrders = JSON.parse(localStorage.getItem("orders") || "[]");
@@ -371,6 +382,13 @@ const Checkout = () => {
         };
         savedOrders.push(newOrder);
         localStorage.setItem("orders", JSON.stringify(savedOrders));
+
+        // Track Facebook Pixel Purchase event for localStorage fallback
+        facebookPixel.trackPurchase({
+          items: cartItems,
+          total: total,
+          orderId: newOrder.id
+        });
 
         // Clear the cart
         clearCart();

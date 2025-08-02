@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import apiService from "../../services/api";
+import facebookPixel from '../../services/facebookPixel';
 
 
 const ContactUs = () => {
@@ -99,6 +100,10 @@ const ContactUs = () => {
 
             if (response.data.success) {
                 setSubmitSuccess(true);
+                
+                // Track Facebook Pixel Contact event
+                facebookPixel.trackContact('contact_form');
+                
                 setContactForm({
                     name: "",
                     email: "",

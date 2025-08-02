@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import apiService from '../services/api';
+import facebookPixel from '../services/facebookPixel';
 
 const CartContext = createContext();
 
@@ -252,6 +253,9 @@ export const CartProvider = ({ children }) => {
             }
           });
 
+          // Track Facebook Pixel AddToCart event
+          facebookPixel.trackAddToCart(newItem, newItem.quantity);
+
           return true;
         }
       } catch (error) {
@@ -346,6 +350,15 @@ export const CartProvider = ({ children }) => {
         return [...prevItems, newItem];
       }
     });
+
+    // Track Facebook Pixel AddToCart event for localStorage fallback
+    const productForTracking = {
+      id: item.product_id || item.name,
+      name: item.name,
+      price: item.price,
+      category: { name: 'Jeans' } // Default category
+    };
+    facebookPixel.trackAddToCart(productForTracking, item.quantity || 1);
 
     return true;
   };

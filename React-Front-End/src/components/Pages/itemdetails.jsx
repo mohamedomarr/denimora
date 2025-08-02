@@ -5,6 +5,7 @@ import { useCartMenu } from "../../contexts/CartMenuContext";
 import { useMobileMenu } from '../../contexts/MobileMenuContext';
 import { useCart } from '../../contexts/CartContext';
 import apiService from '../../services/api';
+import facebookPixel from '../../services/facebookPixel';
 import '../../CSS/bootstrap.css';
 import '../../CSS/Styles.css';
 import useEmblaCarousel from 'embla-carousel-react';
@@ -71,6 +72,15 @@ const ItemDetails = () => {
             setBasePrice(parseFloat(product.price));
             document.title = `DENIMORA - ${product.name}`;
 
+            // Track Facebook Pixel ViewContent event
+            facebookPixel.trackViewContent({
+              id: product.id,
+              name: product.name,
+              price: product.price,
+              slug: product.slug,
+              category: { name: 'Jeans' }
+            });
+
             // Store available sizes
             if (product.available_sizes && product.available_sizes.length > 0) {
               setAvailableSizes(product.available_sizes);
@@ -87,6 +97,14 @@ const ItemDetails = () => {
           setItemData(data);
           setBasePrice(data.price);
           document.title = `DENIMORA - ${data.name}`;
+          
+          // Track Facebook Pixel ViewContent event for URL fallback
+          facebookPixel.trackViewContent({
+            id: productName,
+            name: data.name,
+            price: data.price,
+            category: { name: 'Jeans' }
+          });
         } else {
           // Neither API parameters nor URL parameters available
           navigate('/shop');
@@ -106,6 +124,14 @@ const ItemDetails = () => {
           setItemData(data);
           setBasePrice(data.price);
           document.title = `DENIMORA - ${data.name}`;
+          
+          // Track Facebook Pixel ViewContent event for error fallback
+          facebookPixel.trackViewContent({
+            id: productName,
+            name: data.name,
+            price: data.price,
+            category: { name: 'Jeans' }
+          });
         }
       } finally {
         setIsLoading(false);

@@ -31,7 +31,7 @@ const CartPage = () => {
               <i className="fas fa-shopping-bag"></i>
             </div>
             <h2>Your cart is empty</h2>
-            <p>Add some items to get started!</p>
+            <p>Add items to get started!</p>
             <button className="continue-shopping-btn" onClick={handleContinueShopping}>
               Continue Shopping
             </button>

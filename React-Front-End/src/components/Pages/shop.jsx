@@ -5,6 +5,7 @@ import { useMobileMenu } from '../../contexts/MobileMenuContext';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCartPopup } from '../Layout/MainLayout';
+import ProgressBarManager from '../Shared/ProgressBarManager';
 import apiService from '../../services/api';
 import '../../CSS/bootstrap.css';
 import '../../CSS/Styles.css';
@@ -163,19 +164,19 @@ const Shop = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="page-loading-container">
-        <div className="page-loading-content">
-          <div className="loading-spinner"></div>
-          <h3>Loading products...</h3>
-          <p>Please wait while loading the latest collection</p>
-        </div>
-      </div>
-    );
+    // return (
+    //   <div className="page-loading-container">
+    //     <div className="page-loading-content">
+    //       <div className="loading-spinner"></div>
+    //       <h3>Loading products...</h3>
+    //       <p>Please wait while loading the latest collection</p>
+    //     </div>
+    //   </div>
+    // );
   }
 
   return (
-    <>
+    <ProgressBarManager loadingState={isLoading} autoStartDelay={600}>
       {error && <div className="error-banner">{error}</div>}
 
       {/* Shop Section */}
@@ -225,8 +226,7 @@ const Shop = () => {
           )}
         </div>
       </section>
-
-    </>
+    </ProgressBarManager>
   );
 };
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ProgressBarManager from '../Shared/ProgressBarManager';
 import apiService from "../../services/api";
 import facebookPixel from '../../services/facebookPixel';
 
@@ -35,18 +36,14 @@ const ContactUs = () => {
             name: "",
             email: "",
             message: "",
+            submit: "",
         };
 
-        // Name validation
         if (!contactForm.name.trim()) {
             newErrors.name = "Name is required";
             isValid = false;
-        } else if (contactForm.name.trim().length < 3) {
-            newErrors.name = "Name must be at least 3 characters";
-            isValid = false;
         }
 
-        // Email validation
         if (!contactForm.email.trim()) {
             newErrors.email = "Email is required";
             isValid = false;
@@ -55,12 +52,8 @@ const ContactUs = () => {
             isValid = false;
         }
 
-        // Message validation
         if (!contactForm.message.trim()) {
             newErrors.message = "Message is required";
-            isValid = false;
-        } else if (contactForm.message.trim().length > 500) {
-            newErrors.message = "Message should not exceed 500 characters";
             isValid = false;
         }
 
@@ -68,21 +61,22 @@ const ContactUs = () => {
         return isValid;
     };
 
-    // Handle contact form input changes
     const handleContactInputChange = (e) => {
         const { name, value } = e.target;
         setContactForm((prev) => ({
             ...prev,
             [name]: value,
         }));
+
         // Clear error when user starts typing
-        setContactErrors((prev) => ({
-            ...prev,
-            [name]: "",
-        }));
+        if (contactErrors[name]) {
+            setContactErrors((prev) => ({
+                ...prev,
+                [name]: "",
+            }));
+        }
     };
 
-    // Handle contact form submission
     const handleContactSubmit = async (e) => {
         e.preventDefault();
 
@@ -100,10 +94,6 @@ const ContactUs = () => {
 
             if (response.data.success) {
                 setSubmitSuccess(true);
-                
-                // Track Facebook Pixel Contact event
-                facebookPixel.trackContact('contact_form');
-                
                 setContactForm({
                     name: "",
                     email: "",
@@ -114,49 +104,32 @@ const ContactUs = () => {
                 setTimeout(() => {
                     setSubmitSuccess(false);
                 }, 5000);
+
+                // Track Facebook Pixel Contact event
+                facebookPixel.trackContact();
             } else {
-                // Handle validation errors from the API
-                if (response.data.errors) {
-                    setContactErrors((prev) => ({
-                        ...prev,
-                        ...response.data.errors,
-                    }));
-                } else {
-                    setContactErrors((prev) => ({
-                        ...prev,
-                        submit: response.data.error || "Failed to send message. Please try again.",
-                    }));
-                }
+                throw new Error('Submission failed');
             }
         } catch (error) {
             console.error("Error submitting contact form:", error);
-            let errorMessage = "Failed to send message. Please try again.";
+            let errorMessage = "Failed to send message. Please try again later.";
 
-            if (error.response?.data?.errors) {
-                // Handle field-specific errors
-                setContactErrors((prev) => ({
-                    ...prev,
-                    ...error.response.data.errors,
-                }));
-            } else if (error.response?.data?.error) {
-                errorMessage = error.response.data.error;
-                setContactErrors((prev) => ({
-                    ...prev,
-                    submit: errorMessage,
-                }));
-            } else {
-                setContactErrors((prev) => ({
-                    ...prev,
-                    submit: errorMessage,
-                }));
+            if (error.response?.data?.message) {
+                errorMessage = error.response.data.message;
             }
+
+            setContactErrors((prev) => ({
+                ...prev,
+                submit: errorMessage,
+            }));
         } finally {
             setIsSubmitting(false);
         }
     };
 
     return (
-        <div className="contact-us-page">
+        <ProgressBarManager autoStartDelay={800}>
+            <div className="contact-us-page">
             <div className="contact-page-container">
 
                 {/* Page Title */}
@@ -277,6 +250,7 @@ const ContactUs = () => {
                 </div>
             </div>
         </div>
+        </ProgressBarManager>
     );
 };
 

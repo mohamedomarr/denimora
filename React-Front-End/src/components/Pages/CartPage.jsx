@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
+import ProgressBarManager from '../Shared/ProgressBarManager';
 import '../../CSS/Styles.css';
 
 const CartPage = () => {
@@ -23,7 +24,8 @@ const CartPage = () => {
   };
 
   return (
-    <div className="cart-page">
+    <ProgressBarManager autoStartDelay={500}>
+      <div className="cart-page">
       <div className="cart-page-content">
         {cartItems.length === 0 ? (
           <div className="empty-cart-page">
@@ -122,6 +124,7 @@ const CartPage = () => {
         )}
       </div>
     </div>
+    </ProgressBarManager>
   );
 };
 

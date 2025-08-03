@@ -4,6 +4,7 @@ import { useSizeChart } from '../../hooks/useSizeChart';
 import { useCartMenu } from "../../contexts/CartMenuContext";
 import { useMobileMenu } from '../../contexts/MobileMenuContext';
 import { useCart } from '../../contexts/CartContext';
+import ProgressBarManager from '../Shared/ProgressBarManager';
 import apiService from '../../services/api';
 import facebookPixel from '../../services/facebookPixel';
 import '../../CSS/bootstrap.css';
@@ -363,30 +364,28 @@ const ItemDetails = () => {
   }, [isImageModalOpen, goToPreviousImage, goToNextImage]);
 
   
-  if (isLoading) return (
-    <div className="page-loading-container">
-      <div className="page-loading-content">
-        <div className="loading-spinner"></div>
-        <h3>Loading {itemData?.name} details...</h3>
-        <p>Please wait while we prepare your product information</p>
-      </div>
-    </div>
-  );
-  if (error && !itemData) return (
-    <div className="page-loading-container">
-      <div className="page-loading-content">
-        <div className="error-icon">⚠️</div>
-        <h3>Something went wrong</h3>
-        <p>{error}</p>
-      </div>
-    </div>
-  );
+  // if (isLoading) return (
+  //   <div className="page-loading-container">
+  //     <div className="page-loading-content">
+  //       <div className="loading-spinner"></div>
+  //       <h3>Loading {itemData?.name} details...</h3>
+  //       <p>Please wait while we prepare your product information</p>
+  //     </div>
+  //   </div>
+  // );
+  // if (error && !itemData) return (
+  //   <div className="page-loading-container">
+  //     <div className="page-loading-content">
+  //       <div className="error-icon">⚠️</div>
+  //       <h3>Something went wrong</h3>
+  //       <p>{error}</p>
+  //     </div>
+  //   </div>
+  // );
   if (!itemData) return null;
 
   return (
-    <>
-
-
+    <ProgressBarManager loadingState={isLoading} autoStartDelay={700}>
       {/* Shop Item Section */}
       <section className="shop-item-container">
         <div className="shop-item-img">
@@ -632,8 +631,7 @@ const ItemDetails = () => {
           </div>
         </div>
       )}
-
-    </>
+    </ProgressBarManager>
   );
 };
 

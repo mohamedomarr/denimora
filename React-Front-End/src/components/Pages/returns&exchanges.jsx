@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import ProgressBarManager from '../Shared/ProgressBarManager';
 
 const ReturnsExchanges = () => {
   // Scroll to top when component mounts
@@ -7,7 +8,8 @@ const ReturnsExchanges = () => {
   }, []);
 
   return (
-    <div className="returns-exchanges-page">
+    <ProgressBarManager autoStartDelay={500}>
+      <div className="returns-exchanges-page">
       <div className="returns-page-container">
         
         {/* Page Title */}
@@ -99,6 +101,7 @@ const ReturnsExchanges = () => {
         </div>
       </div>
     </div>
+    </ProgressBarManager>
   );
 };
 

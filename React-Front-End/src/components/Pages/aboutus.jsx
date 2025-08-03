@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import ProgressBarManager from '../Shared/ProgressBarManager';
 import '../../CSS/Styles.css';
 
 const AboutUs = () => {
@@ -7,8 +8,10 @@ const AboutUs = () => {
     window.scrollTo(0, 0);
   }, []);
 
+
   return (
-    <div className="about-us-page">
+    <ProgressBarManager autoStartDelay={600}>
+      <div className="about-us-page">
       <div className="about-page-container">
         
         {/* Page Title */}
@@ -63,6 +66,7 @@ const AboutUs = () => {
         </div>
       </div>
     </div>
+    </ProgressBarManager>
   );
 };
 

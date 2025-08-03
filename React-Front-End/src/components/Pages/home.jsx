@@ -4,6 +4,7 @@ import { useMobileMenu } from "../../contexts/MobileMenuContext";
 import { useCartMenu } from "../../contexts/CartMenuContext";
 import { useCart } from "../../contexts/CartContext";
 import { useCartPopup } from "../Layout/MainLayout";
+import ProgressBarManager from "../Shared/ProgressBarManager";
 import apiService from "../../services/api";
 import "../../CSS/bootstrap.css";
 import "../../CSS/Styles.css";
@@ -240,7 +241,7 @@ const Home = () => {
   };
 
   return (
-    <>
+    <ProgressBarManager loadingState={isLoadingBest} autoStartDelay={600}>
       {/* Hero Section */}
       <div className="hero-section" id="Home">
         <section className="home" id="home">
@@ -408,7 +409,7 @@ const Home = () => {
           </div>
         </div>
       </section>
-    </>
+    </ProgressBarManager>
   );
 };
 

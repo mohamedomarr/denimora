@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import ProgressBarManager from '../Shared/ProgressBarManager';
 
 const TermsConditions = () => {
   // Scroll to top when component mounts
@@ -7,7 +8,8 @@ const TermsConditions = () => {
   }, []);
 
   return (
-    <div className="terms-conditions-page">
+    <ProgressBarManager autoStartDelay={500}>
+      <div className="terms-conditions-page">
       <div className="terms-page-container">
         
         {/* Page Title */}
@@ -126,6 +128,7 @@ const TermsConditions = () => {
         </div>
       </div>
     </div>
+    </ProgressBarManager>
   );
 };
 

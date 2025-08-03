@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../../contexts/CartContext";
 import { useCartMenu } from "../../contexts/CartMenuContext";
 import { useMobileMenu } from "../../contexts/MobileMenuContext";
+import ProgressBarManager from "../Shared/ProgressBarManager";
 import apiService from "../../services/api";
 import facebookPixel from '../../services/facebookPixel';
 import Header from "../Shared/header";
@@ -410,7 +411,7 @@ const Checkout = () => {
   };
 
   return (
-    <>
+    <ProgressBarManager loadingState={isLoadingShipping} autoStartDelay={800}>
       {/* checkout container */}
       <div className="checkout-main-wrapper">
 
@@ -688,7 +689,7 @@ const Checkout = () => {
         </form>
 
       </div>
-    </>
+    </ProgressBarManager>
   );
 };
 

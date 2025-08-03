@@ -308,11 +308,21 @@ const ItemDetails = () => {
   };
 
   const handleTouchStart = useCallback((e) => {
+    // Only handle single touch gestures (ignore multi-touch for zoom)
+    if (e.targetTouches.length !== 1) return;
+    
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
   }, []);
 
   const handleTouchMove = useCallback((e) => {
+    // Only handle single touch gestures (ignore multi-touch for zoom)
+    if (e.targetTouches.length !== 1) {
+      setTouchStart(null);
+      setTouchEnd(null);
+      return;
+    }
+    
     setTouchEnd(e.targetTouches[0].clientX);
   }, []);
 
@@ -328,6 +338,10 @@ const ItemDetails = () => {
     } else if (isRightSwipe) {
       goToPreviousImage();
     }
+    
+    // Reset touch state
+    setTouchStart(null);
+    setTouchEnd(null);
   }, [touchStart, touchEnd, goToNextImage, goToPreviousImage]);
 
   // Keyboard navigation for modal

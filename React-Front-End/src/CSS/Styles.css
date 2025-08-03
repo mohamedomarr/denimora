@@ -1607,6 +1607,7 @@ p {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+    touch-action: manipulation; /* Allows pinch-to-zoom but prevents other touch actions */
 }
 
 .image-modal-close {

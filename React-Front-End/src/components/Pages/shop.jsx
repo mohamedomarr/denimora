@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useCartMenu } from '../../contexts/CartMenuContext';
-import { useMobileMenu } from '../../contexts/MobileMenuContext';
+import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCartPopup } from '../Layout/MainLayout';
@@ -10,76 +8,17 @@ import apiService from '../../services/api';
 import '../../CSS/bootstrap.css';
 import '../../CSS/Styles.css';
 
-// Fallback product data in case API fails
-const FALLBACK_PRODUCTS = [
-  {
-    id: 1,
-    name: "Classic Blue Jeans",
-    slug: "classic-blue-jeans",
-    price: 350,
-    image_url: "/Assets/Shop/Shop 1.jpg",
-    category: { id: 1, name: "Jeans", slug: "jeans" }
-  },
-  {
-    id: 2,
-    name: "Baggi Fit",
-    slug: "baggi-fit",
-    price: 300,
-    image_url: "/Assets/Shop/Shop 2.jpg",
-    category: { id: 1, name: "Jeans", slug: "jeans" }
-  },
-  {
-    id: 3,
-    name: "Wide Leg",
-    slug: "wide-leg",
-    price: 450,
-    image_url: "/Assets/Shop/Shop 3.jpg",
-    category: { id: 1, name: "Jeans", slug: "jeans" }
-  },
-  {
-    id: 4,
-    name: "Straight Leg",
-    slug: "straight-leg",
-    price: 250,
-    image_url: "/Assets/Shop/Shop 6.jpg",
-    category: { id: 2, name: "Pants", slug: "pants" }
-  },
-  {
-    id: 5,
-    name: "Baggi Fit Light",
-    slug: "baggi-fit-light",
-    price: 250,
-    image_url: "/Assets/Shop/Shop 4.jpg",
-    category: { id: 1, name: "Jeans", slug: "jeans" }
-  },
-  {
-    id: 6,
-    name: "Baggi Fit Dark",
-    slug: "baggi-fit-dark",
-    price: 250,
-    image_url: "/Assets/Shop/Shop 5.jpg",
-    category: { id: 1, name: "Jeans", slug: "jeans" }
-  }
-];
-
-// Fallback categories
-const FALLBACK_CATEGORIES = [
-  { id: 1, name: "Jeans", slug: "jeans" },
-  { id: 2, name: "Pants", slug: "pants" }
-];
-
 const Shop = () => {
   const { cartItems, addToCart, removeFromCart, updateQuantity, getTotalPrice } = useCart();
   const { isAuthenticated, user } = useAuth();
   const { handleCartIconClick } = useCartPopup();
   const navigate = useNavigate();
 
-  const [products, setProducts] = useState(FALLBACK_PRODUCTS);
-  const [categories, setCategories] = useState(FALLBACK_CATEGORIES);
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [isUsingFallbackData, setIsUsingFallbackData] = useState(false);
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -100,8 +39,7 @@ const Shop = () => {
           }
         } catch (err) {
           console.error('Error fetching categories:', err);
-          setCategories(FALLBACK_CATEGORIES);
-          setIsUsingFallbackData(true);
+          setCategories([]);
         }
 
         // Fetch products (filtered by category if selected)
@@ -114,21 +52,13 @@ const Shop = () => {
           }
         } catch (err) {
           console.error('Error fetching products:', err);
-          let filteredProducts = FALLBACK_PRODUCTS;
-          if (selectedCategory) {
-            filteredProducts = FALLBACK_PRODUCTS.filter(
-              product => product.category.slug === selectedCategory
-            );
-          }
-          setProducts(filteredProducts);
-          setIsUsingFallbackData(true);
+          setProducts([]);
         }
       } catch (err) {
         console.error('Error in data fetching:', err);
-        setError('Failed to load products. Using local data instead.');
-        setCategories(FALLBACK_CATEGORIES);
-        setProducts(FALLBACK_PRODUCTS);
-        setIsUsingFallbackData(true);
+        setError('Failed to load products.');
+        setCategories([]);
+        setProducts([]);
       } finally {
         setIsLoading(false);
       }
@@ -183,16 +113,15 @@ const Shop = () => {
       <section className="shop-section shop-page-section">
         <div className="Shop-section-title">
           <h2>Our Collection</h2>
-          {isUsingFallbackData && (
-            <p className="fallback-notice">
-              Note: Using local product data. Connect to backend for live products.
-            </p>
-          )}
         </div>
 
         <div className="products-container">
           {products.length === 0 ? (
-            <p className="no-products">Out of Stock For Now</p>
+            isLoading ? (
+              <p className="loading-products">Loading products...</p>
+            ) : (
+              <p className="no-products">Out of Stock For Now</p>
+            )
           ) : (
             products.map((product) => (
               <div
@@ -204,10 +133,6 @@ const Shop = () => {
                   <img
                     src={product.image_url}
                     alt={product.name}
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = '/Assets/Shop/placeholder.jpg';
-                    }}
                   />
                   <a
                     href="#"

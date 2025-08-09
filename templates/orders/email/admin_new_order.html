@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 700px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .summary { background: #f9f9f9; padding: 16px; border-radius: 6px; margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .items-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .items-table th, .items-table td { padding: 8px 10px; border-bottom: 1px solid #e5e7eb; text-align: left; }
+        .totals { margin-top: 10px; text-align: right; }
+        .muted { color: #666; font-size: 12px; }
+        .badge { display: inline-block; padding: 4px 8px; background: #eef2ff; color: #3730a3; border-radius: 12px; font-size: 12px; }
+        .admin-link { margin-top: 12px; }
+    </style>
+    <title>New Order Notification</title>
+    </head>
+<body>
+    <div class="header">
+        <h1>New Order Received</h1>
+        <p class="muted">Order #{{ order.id }} • {{ order.created|date:"F d, Y H:i" }}</p>
+    </div>
+
+    <div class="summary">
+        <div class="grid">
+            <div>
+                <h3>Customer</h3>
+                <p>
+                    {{ order.first_name }} {{ order.last_name }}<br/>
+                    Email: {{ order.email }}<br/>
+                    Phone: {{ order.phone }}
+                </p>
+            </div>
+            <div>
+                <h3>Shipping</h3>
+                <p>
+                    {{ order.address }}<br/>
+                    {{ order.city }}, {{ order.postal_code }}<br/>
+                    {{ order.governorate }}
+                </p>
+            </div>
+        </div>
+        <p>Status: <span class="badge">{{ order.get_status_display }}</span></p>
+    </div>
+
+    <h3>Items</h3>
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Size</th>
+                <th>Price</th>
+                <th>Qty</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items.all %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.size_name|default:"-" }}</td>
+                <td>{{ item.price }} LE</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.get_cost }} LE</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <p><strong>Subtotal:</strong> {{ order.get_total_cost }} LE</p>
+        <p><strong>Shipping:</strong> {{ order.get_shipping_cost }} LE</p>
+        <p><strong>Total:</strong> {{ order.get_total_cost_with_shipping }} LE</p>
+    </div>
+
+    <p class="admin-link">
+        Manage in admin: <a href="{{ site_url }}/admin/orders/order/{{ order.id }}/change/">Open Order</a>
+    </p>
+
+    <p class="muted">This email was sent to administrators configured in the system settings.</p>
+</body>
+</html>
+

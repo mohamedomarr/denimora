@@ -86,7 +86,9 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('DENIMORA_EMAIL_USERNAME')
 EMAIL_HOST_PASSWORD = os.environ.get('DENIMORA_EMAIL_PASSWORD')
 DEFAULT_FROM_EMAIL = f"Denimora <{os.environ.get('DENIMORA_EMAIL_USERNAME', 'noreply@denimora.com')}>"
-ADMIN_NOTIFICATION_EMAILS = os.environ.get('ADMIN_NOTIFICATION_EMAILS')
+ADMIN_NOTIFICATION_EMAILS = [
+    "denimoraorders@gmail.com"
+]
 
 # Use the environment variable or fallback to localhost for development
 SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000') 

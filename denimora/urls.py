@@ -14,6 +14,8 @@ urlpatterns = [
     # API URLs
     path('api/', include('api.urls')),
     path('api/communications/', include('communications.urls', namespace='communications')),
+    # Shipping URLs
+    path('shipping/', include('shipping.urls')),
 ]
 
 if settings.DEBUG:

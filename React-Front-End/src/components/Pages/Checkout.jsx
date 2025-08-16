@@ -271,6 +271,8 @@ const Checkout = () => {
         // Additional fields for tracking (not used by Django backend)
         shipping_fee: shippingFee,
         total_amount: total,
+        // Send canonical governorate to backend in addition to legacy `state`
+        governorate: formData.government,
         state: formData.government,
         apartment: formData.apartment,
       };

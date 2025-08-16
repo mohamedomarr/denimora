@@ -25,7 +25,6 @@ INSTALLED_APPS = [
     'api',
     'storage',
     'shipping.apps.ShippingConfig',
-    'discounts.apps.DiscountsConfig',
 ]
 SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key-change-this-in-production')
 

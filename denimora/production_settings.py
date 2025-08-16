@@ -4,6 +4,29 @@ from .settings import *
 
 # Production settings
 DEBUG = False
+
+# Ensure all custom apps are explicitly configured for production
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    # Third party apps
+    'rest_framework',
+    'corsheaders',
+    # Custom apps - explicitly configured with AppConfig
+    'accounts',
+    'products',
+    'cart',
+    'orders',
+    'communications',
+    'api',
+    'storage',
+    'shipping.apps.ShippingConfig',
+    'discounts.apps.DiscountsConfig',
+]
 SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key-change-this-in-production')
 
 # Allowed hosts - you'll need to update these with your actual Render URL
